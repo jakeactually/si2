@@ -1,10 +1,14 @@
 mod font;
 mod text;
 mod types;
+mod objects;
 
 use ggez::{graphics, Context, ContextBuilder, GameResult};
 use ggez::event::{self, EventHandler};
+use objects::Object;
 use types::MyGame;
+use std::fs::File;
+use std::io::Read;
 
 fn main() {
     // Make a Context.
@@ -45,6 +49,18 @@ impl MyGame {
 
         Ok(())
     }
+
+    pub fn render_object(&mut self, obj: &Object, x: u32, y: u32) -> GameResult<()> {
+        for ry in 0..obj.height {
+            for rx in 0..obj.width {
+                if obj.data[(ry * obj.width + rx) as usize] == 1 {
+                    self.screen[(y + ry) as usize][(x + rx) as usize] = 1;
+                }
+            }
+        }
+
+        Ok(())
+    }
 }
 
 impl EventHandler for MyGame {
@@ -57,10 +73,25 @@ impl EventHandler for MyGame {
         graphics::clear(ctx, graphics::WHITE);
         // Draw code here...
 
-        text::render_text(self, "Hello", 0, 0)?;
+        // text::render_text(self, "Hello", 0, 0)?;
+
+        self.render_object(&objects::STATIC_OBJECTS[0], 5, 5)?;
 
         self.paint(ctx)?;
 
         graphics::present(ctx)
     }
+}
+
+fn load_object<'a>(id: u8, obj: &mut Object) -> std::io::Result<()> {
+    let file = File::open("data/objects/0.dat")?;
+    let bytes = file.bytes().collect::<std::io::Result<Vec<u8>>>()?; 
+
+    *obj = Object {
+        width: bytes[0] as u32,
+        height: bytes[1] as u32,
+        data: &bytes[2..]
+    };
+
+    Ok(())
 }
