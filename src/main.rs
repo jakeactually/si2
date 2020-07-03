@@ -1,8 +1,10 @@
 mod font;
 mod text;
+mod types;
 
 use ggez::{graphics, Context, ContextBuilder, GameResult};
 use ggez::event::{self, EventHandler};
+use types::MyGame;
 
 fn main() {
     // Make a Context.
@@ -22,16 +24,26 @@ fn main() {
     }
 }
 
-struct MyGame {
-    // Your state here...
-}
-
 impl MyGame {
     pub fn new(_ctx: &mut Context) -> MyGame {
         // Load/create resources such as images here.
         MyGame {
-            // ...
+            screen: [[0; 84]; 48]
         }
+    }
+
+    pub fn paint(&mut self, ctx: &mut Context) -> GameResult<()> {
+        for (y, i) in self.screen.iter().enumerate() {
+            for (x, j) in i.iter().enumerate() {
+                if *j == 1 {
+                    let rect = graphics::Rect::new((x * 10) as f32, (y * 10) as f32, 10.0, 10.0);
+                    let r1 = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect, graphics::BLACK)?;
+                    graphics::draw(ctx, &r1, graphics::DrawParam::default())?;
+                }
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -45,7 +57,9 @@ impl EventHandler for MyGame {
         graphics::clear(ctx, graphics::WHITE);
         // Draw code here...
 
-        text::render_text(ctx, "Hello", 0, 0)?;
+        text::render_text(self, "Hello", 0, 0)?;
+
+        self.paint(ctx)?;
 
         graphics::present(ctx)
     }
