@@ -75,7 +75,8 @@ impl EventHandler for MyGame {
 
         // text::render_text(self, "Hello", 0, 0)?;
 
-        self.render_object(&objects::STATIC_OBJECTS[0], 5, 5)?;
+        let crap = load_object(0)?;
+        self.render_object(&crap, 5, 5)?;
 
         self.paint(ctx)?;
 
@@ -83,15 +84,13 @@ impl EventHandler for MyGame {
     }
 }
 
-fn load_object<'a>(id: u8, obj: &mut Object) -> std::io::Result<()> {
-    let file = File::open("data/objects/0.dat")?;
+fn load_object<'a>(id: u8) -> std::io::Result<Object> {
+    let file = File::open(format!("data/objects/{}.dat", id))?;
     let bytes = file.bytes().collect::<std::io::Result<Vec<u8>>>()?; 
 
-    *obj = Object {
+    Ok(Object {
         width: bytes[0] as u32,
         height: bytes[1] as u32,
-        data: &bytes[2..]
-    };
-
-    Ok(())
+        data: bytes[2..].to_vec()
+    })
 }
