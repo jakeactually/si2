@@ -1,12 +1,12 @@
 mod font;
+mod objects;
 mod text;
 mod types;
-mod objects;
+mod util;
 
 use ggez::{graphics, Context, ContextBuilder, GameResult};
 use ggez::event::{self, EventHandler};
-use objects::Object;
-use types::MyGame;
+use types::{MyGame, Object};
 use std::fs::File;
 use std::io::Read;
 
@@ -32,7 +32,8 @@ impl MyGame {
     pub fn new(_ctx: &mut Context) -> MyGame {
         // Load/create resources such as images here.
         MyGame {
-            screen: [[0; 84]; 48]
+            screen: [[0; 84]; 48],
+            static_objects: objects::get_static_objects().to_vec()
         }
     }
 
@@ -51,10 +52,18 @@ impl MyGame {
     }
 
     pub fn render_object(&mut self, obj: &Object, x: u32, y: u32) -> GameResult<()> {
-        for ry in 0..obj.height {
-            for rx in 0..obj.width {
-                if obj.data[(ry * obj.width + rx) as usize] == 1 {
-                    self.screen[(y + ry) as usize][(x + rx) as usize] = 1;
+        for ry in 0..obj.height - 1  {
+            for rx in 0..obj.width - 1 {
+                let offset = (ry * obj.width + rx) as usize;
+
+                if offset < obj.data.len() && obj.data[(ry * obj.width + rx) as usize] == 1 {
+                    let ax = x + rx as u32;
+                    let ay = y + ry as u32;
+                    let inside = ax > 0 && ay > 0 && ax < 84 && ay < 48;
+
+                    if inside {
+                        self.screen[ay as usize][ax as usize] = 1;
+                    }
                 }
             }
         }
@@ -73,10 +82,10 @@ impl EventHandler for MyGame {
         graphics::clear(ctx, graphics::WHITE);
         // Draw code here...
 
-        // text::render_text(self, "Hello", 0, 0)?;
+        text::render_text(self, "Hello", 0, 0)?;
 
-        let crap = load_object(0)?;
-        self.render_object(&crap, 5, 5)?;
+        // crap = load_object(2)?;
+        //self.render_object(&crap, 0, 0)?;
 
         self.paint(ctx)?;
 
