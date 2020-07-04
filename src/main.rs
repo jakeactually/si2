@@ -82,10 +82,10 @@ impl EventHandler for MyGame {
         graphics::clear(ctx, graphics::WHITE);
         // Draw code here...
 
-        text::render_text(self, "Hello", 0, 0)?;
+        // text::render_text(self, "Hello", 0, 0)?;
 
-        // crap = load_object(2)?;
-        //self.render_object(&crap, 0, 0)?;
+        let crap = load_object(2)?;
+        self.render_object(&crap, 0, 0)?;
 
         self.paint(ctx)?;
 
@@ -100,6 +100,6 @@ fn load_object<'a>(id: u8) -> std::io::Result<Object> {
     Ok(Object {
         width: bytes[0] as u32,
         height: bytes[1] as u32,
-        data: bytes[2..].to_vec()
+        data: util::uncompress(bytes[2..].to_vec())
     })
 }
