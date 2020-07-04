@@ -16,5 +16,6 @@ impl Clone for Object {
 
 pub struct MyGame {
     pub screen: [[u8; 84]; 48],
-    pub static_objects: Vec<Object>
+    pub static_objects: Vec<Object>,
+    pub frame: u32
 }

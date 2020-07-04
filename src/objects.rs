@@ -1,4 +1,5 @@
 use crate::types;
+use crate::util;
 
 use types::Object;
 
@@ -135,17 +136,17 @@ pub fn get_static_objects() -> [Object; 23] {
         Object {
             width: 67,
             height: 12,
-            data: PMSPACE.to_vec(),
+            data: util::uncompress(CMSPACE.to_vec()),
         }, /* gSpace */
         Object {
             width: 59,
             height: 9,
-            data: PMINTRO.to_vec(),
+            data: util::uncompress(CMINTRO.to_vec()),
         }, /* gIntro */
         Object {
             width: 76,
             height: 12,
-            data: PMIMPACT.to_vec(),
+            data: util::uncompress(CMIMPACT.to_vec()),
         }, /* gImpact */
         Object {
             width: 3,

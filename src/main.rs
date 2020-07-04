@@ -33,7 +33,8 @@ impl MyGame {
         // Load/create resources such as images here.
         MyGame {
             screen: [[0; 84]; 48],
-            static_objects: objects::get_static_objects().to_vec()
+            static_objects: objects::get_static_objects().to_vec(),
+            frame: 0
         }
     }
 
@@ -45,6 +46,16 @@ impl MyGame {
                     let r1 = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect, graphics::BLACK)?;
                     graphics::draw(ctx, &r1, graphics::DrawParam::default())?;
                 }
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn clear(&mut self, ctx: &mut Context) -> GameResult<()> {
+        for y in 0..48 {
+            for x in 0..84 {
+                self.screen[y][x] = 0;
             }
         }
 
@@ -80,14 +91,24 @@ impl EventHandler for MyGame {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, graphics::WHITE);
-        // Draw code here...
 
         // text::render_text(self, "Hello", 0, 0)?;
+        // let crap = load_object(2)?;
 
-        let crap = load_object(2)?;
-        self.render_object(&crap, 0, 0)?;
+        let rel_time = if self.frame < 12 { self.frame } else { 12 };
+
+        let crap = self.static_objects[10].clone();
+        self.render_object(&crap, 8, rel_time)?;
+
+        let crap = self.static_objects[11].clone();
+        self.render_object(&crap, rel_time * 4, 20)?;
+
+        let crap = self.static_objects[12].clone();
+        self.render_object(&crap, 4, 36 - rel_time)?;
 
         self.paint(ctx)?;
+        self.clear(ctx)?;
+        self.frame += 1;
 
         graphics::present(ctx)
     }
