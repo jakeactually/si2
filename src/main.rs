@@ -149,14 +149,17 @@ impl EventHandler for MyGame {
 
         let rel_time = if self.frame < 12 { self.frame } else { 12 };
 
-        let space = self.static_objects[10].clone();
+        /*let space = self.static_objects[10].clone();
         self.render_object(&space, 8, rel_time)?;
 
         let impact = self.static_objects[12].clone();
         self.render_object(&impact, 4, 38 - rel_time)?;
 
         let intro = self.static_objects[11].clone();
-        self.render_outlined_object(&intro, rel_time * 4 + 4, 21)?;
+        self.render_outlined_object(&intro, rel_time * 4 + 4, 21)?;*/
+
+        let obj = load_object(0)?;
+        self.render_object(&obj, 0, 0)?;
 
         self.frame += 1;
 
