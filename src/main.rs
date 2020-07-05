@@ -5,14 +5,29 @@ mod types;
 mod util;
 
 use ggez::{graphics, Context, ContextBuilder, GameResult};
+use ggez::conf::{WindowMode, FullscreenType};
 use ggez::event::{self, EventHandler};
 use types::{MyGame, Object};
 use std::fs::File;
 use std::io::Read;
 
 fn main() {
+    let window_mode = WindowMode {
+        width: 840.0,
+        height: 480.0,
+        maximized: false,
+        fullscreen_type: FullscreenType::Windowed,
+        borderless: false,
+        min_width: 0.0,
+        max_width: 0.0,
+        min_height: 0.0,
+        max_height: 0.0,
+        resizable: false
+    };
+
     // Make a Context.
     let (mut ctx, mut event_loop) = ContextBuilder::new("my_game", "Cool Game Author")
+        .window_mode(window_mode)
 		.build()
 		.expect("aieee, could not create ggez context!");
 
@@ -34,7 +49,9 @@ impl MyGame {
         MyGame {
             screen: [[0; 84]; 48],
             static_objects: objects::get_static_objects().to_vec(),
-            frame: 0
+            frame: 0,
+            main_color: 1,
+            secondary_color: 0
         }
     }
 
@@ -52,7 +69,17 @@ impl MyGame {
         Ok(())
     }
 
-    pub fn clear(&mut self, ctx: &mut Context) -> GameResult<()> {
+    pub fn pixel(&mut self, ax: i32, ay: i32) -> GameResult<()> {
+        let inside = ax > 0 && ay > 0 && ax < 84 && ay < 48;
+        
+        if inside {
+            self.screen[ay as usize][ax as usize] = self.main_color;
+        }
+
+        Ok(())
+    }
+
+    pub fn clear(&mut self) -> GameResult<()> {
         for y in 0..48 {
             for x in 0..84 {
                 self.screen[y][x] = 0;
@@ -63,21 +90,54 @@ impl MyGame {
     }
 
     pub fn render_object(&mut self, obj: &Object, x: u32, y: u32) -> GameResult<()> {
-        for ry in 0..obj.height - 1  {
-            for rx in 0..obj.width - 1 {
+        for ry in 0..obj.height  {
+            for rx in 0..obj.width {
                 let offset = (ry * obj.width + rx) as usize;
 
-                if offset < obj.data.len() && obj.data[(ry * obj.width + rx) as usize] == 1 {
-                    let ax = x + rx as u32;
-                    let ay = y + ry as u32;
-                    let inside = ax > 0 && ay > 0 && ax < 84 && ay < 48;
-
-                    if inside {
-                        self.screen[ay as usize][ax as usize] = 1;
-                    }
+                if offset < obj.data.len() && obj.data[offset as usize] == 1 {
+                    let ax = (x + rx) as i32;
+                    let ay = (y + ry) as i32;
+                    self.pixel(ax, ay)?;
                 }
             }
         }
+
+        Ok(())
+    }
+
+    pub fn render_outlined_object(&mut self, obj: &Object, x: u32, y: u32) -> GameResult<()> {
+        self.invert()?;
+
+        for ry in 0..obj.height  {
+            for rx in 0..obj.width {
+                let offset = (ry * obj.width + rx) as usize;
+
+                if offset < obj.data.len() && obj.data[offset as usize] == 1 {
+                    let ax = (x + rx) as i32;
+                    let ay = (y + ry) as i32;
+                    self.pixel(ax - 1, ay)?;
+                    self.pixel(ax + 1, ay)?;
+                    self.pixel(ax, ay - 1)?;
+                    self.pixel(ax, ay + 1)?;
+
+                    self.pixel(ax - 1, ay - 1)?;
+                    self.pixel(ax + 1, ay + 1)?;
+                    self.pixel(ax + 1, ay - 1)?;
+                    self.pixel(ax - 1, ay + 1)?;
+                }
+            }
+        }
+
+        self.invert()?;
+        self.render_object(obj, x, y)?;
+
+        Ok(())
+    }
+
+    pub fn invert(&mut self) -> GameResult<()> {
+        let temp = self.main_color;
+        self.main_color = self.secondary_color;
+        self.secondary_color = temp;
 
         Ok(())
     }
@@ -85,31 +145,27 @@ impl MyGame {
 
 impl EventHandler for MyGame {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
-        // Update code here...
+        self.clear()?;
+
+        let rel_time = if self.frame < 12 { self.frame } else { 12 };
+
+        let space = self.static_objects[10].clone();
+        self.render_object(&space, 8, rel_time)?;
+
+        let impact = self.static_objects[12].clone();
+        self.render_object(&impact, 4, 38 - rel_time)?;
+
+        let intro = self.static_objects[11].clone();
+        self.render_outlined_object(&intro, rel_time * 4 + 4, 21)?;
+
+        self.frame += 1;
+
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, graphics::WHITE);
-
-        // text::render_text(self, "Hello", 0, 0)?;
-        // let crap = load_object(2)?;
-
-        let rel_time = if self.frame < 12 { self.frame } else { 12 };
-
-        let crap = self.static_objects[10].clone();
-        self.render_object(&crap, 8, rel_time)?;
-
-        let crap = self.static_objects[11].clone();
-        self.render_object(&crap, rel_time * 4, 20)?;
-
-        let crap = self.static_objects[12].clone();
-        self.render_object(&crap, 4, 36 - rel_time)?;
-
         self.paint(ctx)?;
-        self.clear(ctx)?;
-        self.frame += 1;
-
         graphics::present(ctx)
     }
 }
