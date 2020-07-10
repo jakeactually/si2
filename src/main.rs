@@ -89,10 +89,10 @@ impl MyGame {
         Ok(())
     }
 
-    pub fn render_object(&mut self, obj: &Object, x: u32, y: u32) -> GameResult<()> {
-        for ry in 0..obj.height  {
-            for rx in 0..obj.width {
-                let offset = (ry * obj.width + rx) as usize;
+    pub fn render_object(&mut self, obj: &Object, x: i32, y: i32) -> GameResult<()> {
+        for ry in 0..obj.height as i32  {
+            for rx in 0..obj.width as i32 {
+                let offset = (ry * obj.width as i32 + rx) as usize;
 
                 if offset < obj.data.len() && obj.data[offset as usize] == 1 {
                     let ax = (x + rx) as i32;
@@ -105,12 +105,12 @@ impl MyGame {
         Ok(())
     }
 
-    pub fn render_outlined_object(&mut self, obj: &Object, x: u32, y: u32) -> GameResult<()> {
+    pub fn render_outlined_object(&mut self, obj: &Object, x: i32, y: i32) -> GameResult<()> {
         self.invert()?;
 
-        for ry in 0..obj.height  {
-            for rx in 0..obj.width {
-                let offset = (ry * obj.width + rx) as usize;
+        for ry in 0..obj.height as i32  {
+            for rx in 0..obj.width as i32 {
+                let offset = (ry * obj.width as i32 + rx) as usize;
 
                 if offset < obj.data.len() && obj.data[offset as usize] == 1 {
                     let ax = (x + rx) as i32;
@@ -149,17 +149,28 @@ impl EventHandler for MyGame {
 
         let rel_time = if self.frame < 12 { self.frame } else { 12 };
 
-        /*let space = self.static_objects[10].clone();
+        /* let space = self.static_objects[10].clone();
         self.render_object(&space, 8, rel_time)?;
 
         let impact = self.static_objects[12].clone();
         self.render_object(&impact, 4, 38 - rel_time)?;
 
         let intro = self.static_objects[11].clone();
-        self.render_outlined_object(&intro, rel_time * 4 + 4, 21)?;*/
+        self.render_outlined_object(&intro, rel_time * 4 + 4, 21)?; */
 
-        let obj = load_object(0)?;
-        self.render_object(&obj, 0, 0)?;
+        // let obj = load_object(0)?;
+        // self.render_object(&obj, 0, 0)?;
+
+        let enemies = load_level(0)?;
+
+        for enemy in enemies {
+            let obj = load_enemy(enemy.id as u8)?;
+            let true_x = enemy.x - self.frame as i32;
+
+            if true_x > -100 && true_x < 940 { 
+                self.render_object(&obj, true_x, enemy.y)?;
+            }
+        }
 
         self.frame += 1;
 
@@ -182,4 +193,45 @@ fn load_object<'a>(id: u8) -> std::io::Result<Object> {
         height: bytes[1] as u32,
         data: util::uncompress(bytes[2..].to_vec())
     })
+}
+
+struct Enemy {
+    id: u32,
+    x: i32,
+    y: i32,
+    dir: i32
+}
+
+fn load_level<'a>(id: u8) -> std::io::Result<Vec<Enemy>> {
+    let file = File::open(format!("data/levels/{}.dat", id))?;
+    let bytes = file.bytes().collect::<std::io::Result<Vec<u8>>>()?; 
+
+    let amount = bytes[0];
+    let mut result = vec![];
+
+    for i in 0..amount {
+        let offset = i * 5;
+        let view = bytes[(offset as usize + 1)..(offset as usize + 6)].to_vec();
+
+        let enemy = Enemy {
+            id: view[3] as u32,
+            x: view[0] as i32 * 256 + view[1] as i32,
+            y: view[2] as i32,
+            dir: (view[4] as i32) - 1
+        };
+
+        result.push(enemy);
+    }
+
+    Ok(result)
+}
+
+fn load_enemy<'a>(id: u8) -> std::io::Result<Object> {
+    let file = File::open(format!("data/enemies/{}.dat", id))?;
+    let bytes = file.bytes().collect::<std::io::Result<Vec<u8>>>()?; 
+
+    let model = bytes[0];
+    let obj = load_object(model)?;
+
+    Ok(obj)
 }
