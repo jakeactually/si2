@@ -3,13 +3,15 @@ mod objects;
 mod text;
 mod types;
 mod util;
+mod load;
+mod render;
 
+use ggez::event::{EventHandler, KeyCode};
 use ggez::{graphics, Context, ContextBuilder, GameResult};
 use ggez::conf::{WindowMode, FullscreenType};
-use ggez::event::{self, EventHandler};
-use types::{MyGame, Object};
-use std::fs::File;
-use std::io::Read;
+use ggez::input::keyboard;
+use types::{MyGame};
+use std::collections::HashMap;
 
 fn main() {
     let window_mode = WindowMode {
@@ -25,19 +27,14 @@ fn main() {
         resizable: false
     };
 
-    // Make a Context.
-    let (mut ctx, mut event_loop) = ContextBuilder::new("my_game", "Cool Game Author")
+    let (mut ctx, mut event_loop) = ContextBuilder::new("", "")
         .window_mode(window_mode)
 		.build()
-		.expect("aieee, could not create ggez context!");
+		.unwrap();
 
-    // Create an instance of your event handler.
-    // Usually, you should provide it with the Context object to
-    // use when setting your game up.
     let mut my_game = MyGame::new(&mut ctx);
 
-    // Run!
-    match event::run(&mut ctx, &mut event_loop, &mut my_game) {
+    match ggez::event::run(&mut ctx, &mut event_loop, &mut my_game) {
         Ok(_) => println!("Exited cleanly."),
         Err(e) => println!("Error occured: {}", e)
     }
@@ -45,101 +42,18 @@ fn main() {
 
 impl MyGame {
     pub fn new(_ctx: &mut Context) -> MyGame {
-        // Load/create resources such as images here.
         MyGame {
             screen: [[0; 84]; 48],
             static_objects: objects::get_static_objects().to_vec(),
             frame: 0,
             main_color: 1,
-            secondary_color: 0
+            secondary_color: 0,
+
+            player_x: 3,
+            player_y: 20,
+            objects_cache: HashMap::new(),
+            enemies_cache: HashMap::new()
         }
-    }
-
-    pub fn paint(&mut self, ctx: &mut Context) -> GameResult<()> {
-        for (y, i) in self.screen.iter().enumerate() {
-            for (x, j) in i.iter().enumerate() {
-                if *j == 1 {
-                    let rect = graphics::Rect::new((x * 10) as f32, (y * 10) as f32, 10.0, 10.0);
-                    let r1 = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect, graphics::BLACK)?;
-                    graphics::draw(ctx, &r1, graphics::DrawParam::default())?;
-                }
-            }
-        }
-
-        Ok(())
-    }
-
-    pub fn pixel(&mut self, ax: i32, ay: i32) -> GameResult<()> {
-        let inside = ax > 0 && ay > 0 && ax < 84 && ay < 48;
-        
-        if inside {
-            self.screen[ay as usize][ax as usize] = self.main_color;
-        }
-
-        Ok(())
-    }
-
-    pub fn clear(&mut self) -> GameResult<()> {
-        for y in 0..48 {
-            for x in 0..84 {
-                self.screen[y][x] = 0;
-            }
-        }
-
-        Ok(())
-    }
-
-    pub fn render_object(&mut self, obj: &Object, x: i32, y: i32) -> GameResult<()> {
-        for ry in 0..obj.height as i32  {
-            for rx in 0..obj.width as i32 {
-                let offset = (ry * obj.width as i32 + rx) as usize;
-
-                if offset < obj.data.len() && obj.data[offset as usize] == 1 {
-                    let ax = (x + rx) as i32;
-                    let ay = (y + ry) as i32;
-                    self.pixel(ax, ay)?;
-                }
-            }
-        }
-
-        Ok(())
-    }
-
-    pub fn render_outlined_object(&mut self, obj: &Object, x: i32, y: i32) -> GameResult<()> {
-        self.invert()?;
-
-        for ry in 0..obj.height as i32  {
-            for rx in 0..obj.width as i32 {
-                let offset = (ry * obj.width as i32 + rx) as usize;
-
-                if offset < obj.data.len() && obj.data[offset as usize] == 1 {
-                    let ax = (x + rx) as i32;
-                    let ay = (y + ry) as i32;
-                    self.pixel(ax - 1, ay)?;
-                    self.pixel(ax + 1, ay)?;
-                    self.pixel(ax, ay - 1)?;
-                    self.pixel(ax, ay + 1)?;
-
-                    self.pixel(ax - 1, ay - 1)?;
-                    self.pixel(ax + 1, ay + 1)?;
-                    self.pixel(ax + 1, ay - 1)?;
-                    self.pixel(ax - 1, ay + 1)?;
-                }
-            }
-        }
-
-        self.invert()?;
-        self.render_object(obj, x, y)?;
-
-        Ok(())
-    }
-
-    pub fn invert(&mut self) -> GameResult<()> {
-        let temp = self.main_color;
-        self.main_color = self.secondary_color;
-        self.secondary_color = temp;
-
-        Ok(())
     }
 }
 
@@ -148,6 +62,16 @@ impl EventHandler for MyGame {
         self.clear()?;
 
         let rel_time = if self.frame < 12 { self.frame } else { 12 };
+
+        if keyboard::is_key_pressed(_ctx, KeyCode::Right) && self.player_x < 84 - 10 {
+            self.player_x += 1;
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Left) && self.player_x > 0 {
+            self.player_x -= 1;
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Up) && self.player_y > 0 {
+            self.player_y -= 1;
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Down) && self.player_y < 48 - 7 {
+            self.player_y += 1;
+        }
 
         /* let space = self.static_objects[10].clone();
         self.render_object(&space, 8, rel_time)?;
@@ -161,16 +85,19 @@ impl EventHandler for MyGame {
         // let obj = load_object(0)?;
         // self.render_object(&obj, 0, 0)?;
 
-        let enemies = load_level(0)?;
+        let enemies = self.load_level(0)?;
 
         for enemy in enemies {
-            let obj = load_enemy(enemy.id as u8)?;
+            let obj = self.load_enemy(enemy.id as u8)?;
             let true_x = enemy.x - self.frame as i32;
 
             if true_x > -100 && true_x < 940 { 
                 self.render_object(&obj, true_x, enemy.y)?;
             }
         }
+
+        let player = self.load_object(255)?;
+        self.render_object(&player, self.player_x, self.player_y)?;
 
         self.frame += 1;
 
@@ -182,56 +109,4 @@ impl EventHandler for MyGame {
         self.paint(ctx)?;
         graphics::present(ctx)
     }
-}
-
-fn load_object<'a>(id: u8) -> std::io::Result<Object> {
-    let file = File::open(format!("data/objects/{}.dat", id))?;
-    let bytes = file.bytes().collect::<std::io::Result<Vec<u8>>>()?; 
-
-    Ok(Object {
-        width: bytes[0] as u32,
-        height: bytes[1] as u32,
-        data: util::uncompress(bytes[2..].to_vec())
-    })
-}
-
-struct Enemy {
-    id: u32,
-    x: i32,
-    y: i32,
-    dir: i32
-}
-
-fn load_level<'a>(id: u8) -> std::io::Result<Vec<Enemy>> {
-    let file = File::open(format!("data/levels/{}.dat", id))?;
-    let bytes = file.bytes().collect::<std::io::Result<Vec<u8>>>()?; 
-
-    let amount = bytes[0];
-    let mut result = vec![];
-
-    for i in 0..amount {
-        let offset = i * 5;
-        let view = bytes[(offset as usize + 1)..(offset as usize + 6)].to_vec();
-
-        let enemy = Enemy {
-            id: view[3] as u32,
-            x: view[0] as i32 * 256 + view[1] as i32,
-            y: view[2] as i32,
-            dir: (view[4] as i32) - 1
-        };
-
-        result.push(enemy);
-    }
-
-    Ok(result)
-}
-
-fn load_enemy<'a>(id: u8) -> std::io::Result<Object> {
-    let file = File::open(format!("data/enemies/{}.dat", id))?;
-    let bytes = file.bytes().collect::<std::io::Result<Vec<u8>>>()?; 
-
-    let model = bytes[0];
-    let obj = load_object(model)?;
-
-    Ok(obj)
 }
