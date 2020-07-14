@@ -1,4 +1,4 @@
-use crate::types::{MyGame, Enemy, Object};
+use crate::types::{MyGame, Enemy, Object, EnemyData};
 use crate::util;
 
 use std::fs::File;
@@ -15,12 +15,15 @@ impl MyGame {
         for i in 0..amount {
             let offset = i * 5;
             let view = bytes[(offset as usize + 1)..(offset as usize + 6)].to_vec();
+            let enemy_id = view[3];
+            let enemy_data = self.load_enemy(enemy_id)?;
 
             let enemy = Enemy {
-                id: view[3] as u32,
+                id: enemy_id,
                 x: view[0] as i32 * 256 + view[1] as i32,
                 y: view[2] as i32,
-                dir: (view[4] as i32) - 1
+                dir: (view[4] as i32) - 1,
+                data: enemy_data
             };
 
             result.push(enemy);
@@ -29,7 +32,7 @@ impl MyGame {
         Ok(result)
     }
 
-    pub fn load_enemy<'a>(&mut self, id: u8) -> std::io::Result<Object> {
+    pub fn load_enemy<'a>(&mut self, id: u8) -> std::io::Result<EnemyData> {
         if self.enemies_cache.contains_key(&id) {
             return Ok(self.enemies_cache.get(&id).unwrap().clone());
         }
@@ -37,11 +40,12 @@ impl MyGame {
         let file = File::open(format!("data/enemies/{}.dat", id))?;
         let bytes = file.bytes().collect::<std::io::Result<Vec<u8>>>()?; 
 
-        let model = bytes[0];
-        let obj = self.load_object(model)?;
+        let model = EnemyData {
+            model_id: bytes[0]
+        };
 
-        self.enemies_cache.insert(id, obj.clone());
-        Ok(obj)
+        self.enemies_cache.insert(id, model.clone());
+        Ok(model)
     }
     
     pub fn load_object<'a>(&mut self, id: u8) -> std::io::Result<Object> {

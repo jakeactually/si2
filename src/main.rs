@@ -102,15 +102,26 @@ impl EventHandler for MyGame {
         let enemies = self.load_level(0)?;
 
         for enemy in enemies {
-            let obj = self.load_enemy(enemy.id as u8)?;
-            let true_x = enemy.x - self.frame as i32;
+            let obj = self.load_object(enemy.data.model_id as u8)?;
+            let screen_x = enemy.x - self.frame as i32 / 10;
 
-            if true_x > -100 && true_x < 940 { 
-                self.render_object(&obj, true_x, enemy.y)?;
+            if screen_x > -100 && screen_x < 940 {
+                let outside =
+                    self.player_x  + 10 < screen_x ||
+                    self.player_y + 7 < enemy.y ||
+                    self.player_x > screen_x + obj.width as i32 ||
+                    self.player_y > enemy.y + obj.height as i32;
+
+                if !outside {
+                    println!("collission");
+                }
+
+                self.render_object(&obj, screen_x, enemy.y)?;
             }
         }
 
         let player = self.load_object(255)?;
+        // println!("{} {}", player.width, player.height);
         self.render_object(&player, self.player_x, self.player_y)?;
 
         self.frame += 1;

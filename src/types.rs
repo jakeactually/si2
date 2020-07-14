@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::io::Result;
 
 #[derive(Clone)]
 pub struct Object {
@@ -17,15 +18,22 @@ pub struct MyGame {
     pub player_x: i32,
     pub player_y: i32,
     pub objects_cache: HashMap<u8, Object>,
-    pub enemies_cache: HashMap<u8, Object>,
+    pub enemies_cache: HashMap<u8, EnemyData>,
     pub shots: Vec<Vec2>
 }
 
+#[derive(Clone)]
 pub struct Enemy {
-    pub id: u32,
+    pub id: u8,
     pub x: i32,
     pub y: i32,
-    pub dir: i32
+    pub dir: i32,
+    pub data: EnemyData
+}
+
+#[derive(Clone)]
+pub struct EnemyData {
+    pub model_id: u8
 }
 
 #[derive(Clone)]
