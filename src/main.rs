@@ -10,7 +10,7 @@ use ggez::event::{EventHandler, KeyCode};
 use ggez::{graphics, Context, ContextBuilder, GameResult};
 use ggez::conf::{WindowMode, FullscreenType};
 use ggez::input::keyboard;
-use types::{MyGame};
+use types::{MyGame, Vec2};
 use std::collections::HashMap;
 
 fn main() {
@@ -52,7 +52,8 @@ impl MyGame {
             player_x: 3,
             player_y: 20,
             objects_cache: HashMap::new(),
-            enemies_cache: HashMap::new()
+            enemies_cache: HashMap::new(),
+            shots: vec![]
         }
     }
 }
@@ -71,6 +72,19 @@ impl EventHandler for MyGame {
             self.player_y -= 1;
         } else if keyboard::is_key_pressed(_ctx, KeyCode::Down) && self.player_y < 48 - 7 {
             self.player_y += 1;
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Space) && self.frame % 6 == 0 {
+            self.shots.push(Vec2(self.player_x + 9, self.player_y + 3));
+        }
+
+        self.shots = self.shots.iter()
+            .map(|Vec2(x, y)| Vec2(x + 1, *y))
+            .filter(|Vec2(x, _)| *x < 84)
+            .collect();
+
+        let bullet = self.static_objects[20].clone();
+
+        for shot in self.shots.clone().iter() {
+            self.render_object(&bullet, shot.0, shot.1)?;
         }
 
         /* let space = self.static_objects[10].clone();
