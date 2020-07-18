@@ -10,7 +10,7 @@ use ggez::event::{EventHandler, KeyCode};
 use ggez::{graphics, Context, ContextBuilder, GameResult};
 use ggez::conf::{WindowMode, FullscreenType};
 use ggez::input::keyboard;
-use types::{MyGame, Vec2};
+use types::{MyGame, Vec2, Enemy};
 use std::collections::HashMap;
 
 fn main() {
@@ -53,13 +53,21 @@ impl MyGame {
             player_y: 20,
             objects_cache: HashMap::new(),
             enemies_cache: HashMap::new(),
-            shots: vec![]
+            shots: vec![],
+            
+            enemies: vec![],
+            is_playing: false
         }
     }
 }
 
 impl EventHandler for MyGame {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
+        if !self.is_playing {
+            self.is_playing = true;
+            self.enemies = self.load_level(0)?;
+        }
+
         self.clear()?;
 
         let rel_time = if self.frame < 12 { self.frame } else { 12 };
@@ -76,17 +84,6 @@ impl EventHandler for MyGame {
             self.shots.push(Vec2(self.player_x + 9, self.player_y + 3));
         }
 
-        self.shots = self.shots.iter()
-            .map(|Vec2(x, y)| Vec2(x + 1, *y))
-            .filter(|Vec2(x, _)| *x < 84)
-            .collect();
-
-        let bullet = self.static_objects[20].clone();
-
-        for shot in self.shots.clone().iter() {
-            self.render_object(&bullet, shot.0, shot.1)?;
-        }
-
         /* let space = self.static_objects[10].clone();
         self.render_object(&space, 8, rel_time)?;
 
@@ -99,16 +96,32 @@ impl EventHandler for MyGame {
         // let obj = load_object(0)?;
         // self.render_object(&obj, 0, 0)?;
 
+        // Player
 
         let player = self.load_object(255)?;
         // println!("{} {}", player.width, player.height);
         self.render_object(&player, self.player_x, self.player_y)?;
 
-        let enemies = self.load_level(0)?;
+        // Shots
 
-        for enemy in enemies {
+        self.shots = self.shots.iter()
+            .map(|Vec2(x, y)| Vec2(x + 1, *y))
+            .filter(|Vec2(x, _)| *x < 84)
+            .collect();
+
+        let bullet = self.static_objects[20].clone();
+
+        for shot in self.shots.clone().iter() {
+            self.render_object(&bullet, shot.0, shot.1)?;
+        }
+
+        // Enemies
+
+        let mut next_enemies: Vec<Enemy> = vec![];
+
+        for mut enemy in self.enemies.clone() {
             let obj = self.load_object(enemy.data.model_id as u8)?;
-            let screen_x = enemy.x - self.frame as i32 / 10;
+            let screen_x = enemy.x - self.frame as i32 / 2;
 
             if self.frame % 10 == 0 && screen_x > -100 && screen_x < 940 {
                 let outside =
@@ -125,10 +138,45 @@ impl EventHandler for MyGame {
                     }
                 }
 
+                let mut next_shots: Vec<Vec2> = vec![];
+
+                for shot in self.shots.clone().iter() {
+                    let outside =
+                        shot.0 + (bullet.width as i32) < screen_x ||
+                        shot.1 + (bullet.height as i32) < enemy.y ||
+                        shot.0 > screen_x + obj.width as i32 ||
+                        shot.1 > enemy.y + obj.height as i32;
+                    
+                    if !outside {
+                        let collide = util::does_collide(bullet.clone(), shot.0, shot.1, obj.clone(), screen_x, enemy.y);
+    
+                        if collide {
+                            enemy.alive = false;
+                        } else {
+                            next_shots.push(shot.clone());
+                        }
+                    } else {
+                        next_shots.push(shot.clone());
+                    }
+                }
+
+                self.shots = next_shots;
             }
             
-            self.render_object(&obj, screen_x, enemy.y)?;
+            if enemy.alive {
+                self.render_object(&obj, screen_x, enemy.y)?;
+                next_enemies.push(enemy);
+            } else if enemy.explosion_frames > 0 {
+                let explosion = self.static_objects[22 - (enemy.explosion_frames as usize - 1) / 3].clone();
+                self.render_object(&explosion, screen_x, enemy.y)?;
+                enemy.explosion_frames -= 1;
+                next_enemies.push(enemy);
+            }
         }
+
+        self.enemies = next_enemies;
+
+        // The end
 
         self.frame += 1;
 

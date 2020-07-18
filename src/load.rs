@@ -23,7 +23,9 @@ impl MyGame {
                 x: view[0] as i32 * 256 + view[1] as i32,
                 y: view[2] as i32,
                 dir: (view[4] as i32) - 1,
-                data: enemy_data
+                data: enemy_data,
+                alive: true,
+                explosion_frames: 6
             };
 
             result.push(enemy);
