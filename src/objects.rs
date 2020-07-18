@@ -1,7 +1,7 @@
 use crate::types;
 use crate::util;
 
-use types::Object;
+use types::{Object, Vec2};
 
 pub const PMNUM: [[u8; 15]; 10] = [
     [1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1],
@@ -84,118 +84,164 @@ pub fn get_static_objects() -> [Object; 23] {
     [
         /* Statikus objektumok, az elemekre a Graphics enumeráció tárol neveket */
         Object {
-            width: 3,
-            height: 5,
+            size: Vec2 {
+                x: 3,
+                y: 5
+            },
             data: PMNUM[0].to_vec(),
         }, /* gNum0 */
         Object {
-            width: 3,
-            height: 5,
+            size: Vec2 {
+                x: 3,
+                y: 5
+            },
             data: PMNUM[1].to_vec(),
         }, /* gNum1 */
         Object {
-            width: 3,
-            height: 5,
+            size: Vec2 {
+                x: 3,
+                y: 5
+            },
             data: PMNUM[2].to_vec(),
         }, /* gNum2 */
         Object {
-            width: 3,
-            height: 5,
+            size: Vec2 {
+                x: 3,
+                y: 5
+            },
             data: PMNUM[3].to_vec(),
         }, /* gNum3 */
         Object {
-            width: 3,
-            height: 5,
+            size: Vec2 {
+                x: 3,
+                y: 5
+            },
             data: PMNUM[4].to_vec(),
         }, /* gNum4 */
         Object {
-            width: 3,
-            height: 5,
+            size: Vec2 {
+                x: 3,
+                y: 5
+            },
             data: PMNUM[5].to_vec(),
         }, /* gNum5 */
         Object {
-            width: 3,
-            height: 5,
+            size: Vec2 {
+                x: 3,
+                y: 5
+            },
             data: PMNUM[6].to_vec(),
         }, /* gNum6 */
         Object {
-            width: 3,
-            height: 5,
+            size: Vec2 {
+                x: 3,
+                y: 5
+            },
             data: PMNUM[7].to_vec(),
         }, /* gNum7 */
         Object {
-            width: 3,
-            height: 5,
+            size: Vec2 {
+                x: 3,
+                y: 5
+            },
             data: PMNUM[8].to_vec(),
         }, /* gNum8 */
         Object {
-            width: 3,
-            height: 5,
+            size: Vec2 {
+                x: 3,
+                y: 5
+            },
             data: PMNUM[9].to_vec(),
         }, /* gNum9 */
         Object {
-            width: 67,
-            height: 12,
+            size: Vec2 {
+                x: 67,
+                y: 12
+            },
             data: util::uncompress(CMSPACE.to_vec()),
         }, /* gSpace */
         Object {
-            width: 59,
-            height: 9,
+            size: Vec2 {
+                x: 59,
+                y: 9
+            },
             data: util::uncompress(CMINTRO.to_vec()),
         }, /* gIntro */
         Object {
-            width: 76,
-            height: 12,
+            size: Vec2 {
+                x: 76,
+                y: 12
+            },
             data: util::uncompress(CMIMPACT.to_vec()),
         }, /* gImpact */
         Object {
-            width: 3,
-            height: 7,
+            size: Vec2 {
+                x: 3,
+                y: 7
+            },
             data: PMSCROLLMARK.to_vec(),
         }, /* gScrollMark */
         Object {
-            width: 4,
-            height: 3,
+            size: Vec2 {
+                x: 4,
+                y: 3
+            },
             data: PMDOTEMPTY.to_vec(),
         }, /* gDotEmpty */
         Object {
-            width: 4,
-            height: 3,
+            size: Vec2 {
+                x: 4,
+                y: 3
+            },
             data: PMDOTFULL.to_vec(),
         }, /* gDotFull */
         Object {
-            width: 5,
-            height: 5,
+            size: Vec2 {
+                x: 5,
+                y: 5
+            },
             data: PMLIFE.to_vec(),
         }, /* gLife */
         Object {
-            width: 5,
-            height: 5,
+            size: Vec2 {
+                x: 5,
+                y: 5
+            },
             data: PMMISSILEICON.to_vec(),
         }, /* gMissileIcon */
         Object {
-            width: 5,
-            height: 5,
+            size: Vec2 {
+                x: 5,
+                y: 5
+            },
             data: PMBEAMICON.to_vec(),
         }, /* gBeamIcon */
         Object {
-            width: 5,
-            height: 5,
+            size: Vec2 {
+                x: 5,
+                y: 5
+            },
             data: PMWALLICON.to_vec(),
         }, /* gWallIcon */
         Object {
-            width: 3,
-            height: 1,
+            size: Vec2 {
+                x: 3,
+                y: 1
+            },
             data: PMSHOT.to_vec(),
         }, /* gShot */
         Object {
-            width: 5,
-            height: 5,
+            size: Vec2 {
+                x: 5,
+                y: 5
+            },
             data: PMEXPLOSION[0].to_vec(),
         }, /* gExplosionA1 */
         Object {
-            width: 5,
-            height: 5,
+            size: Vec2 {
+                x: 5,
+                y: 5
+            },
             data: PMEXPLOSION[1].to_vec(),
         }, /* gExplosionA2 */
     ]

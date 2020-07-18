@@ -37,9 +37,9 @@ impl MyGame {
     }
 
     pub fn render_object(&mut self, obj: &Object, x: i32, y: i32) -> GameResult<()> {
-        for ry in 0..obj.height as i32  {
-            for rx in 0..obj.width as i32 {
-                let offset = (ry * obj.width as i32 + rx) as usize;
+        for ry in 0..obj.size.y as i32  {
+            for rx in 0..obj.size.x as i32 {
+                let offset = (ry * obj.size.x as i32 + rx) as usize;
 
                 if offset < obj.data.len() && obj.data[offset as usize] == 1 {
                     let ax = (x + rx) as i32;
@@ -55,9 +55,9 @@ impl MyGame {
     pub fn render_outlined_object(&mut self, obj: &Object, x: i32, y: i32) -> GameResult<()> {
         self.invert()?;
 
-        for ry in 0..obj.height as i32  {
-            for rx in 0..obj.width as i32 {
-                let offset = (ry * obj.width as i32 + rx) as usize;
+        for ry in 0..obj.size.y as i32  {
+            for rx in 0..obj.size.x as i32 {
+                let offset = (ry * obj.size.x as i32 + rx) as usize;
 
                 if offset < obj.data.len() && obj.data[offset as usize] == 1 {
                     let ax = (x + rx) as i32;

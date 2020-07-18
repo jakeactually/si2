@@ -1,4 +1,4 @@
-use crate::types::{MyGame, Enemy, Object, EnemyData};
+use crate::types::{MyGame, Enemy, Object, EnemyData, Vec2};
 use crate::util;
 
 use std::fs::File;
@@ -20,8 +20,10 @@ impl MyGame {
 
             let enemy = Enemy {
                 id: enemy_id,
-                x: view[0] as i32 * 256 + view[1] as i32,
-                y: view[2] as i32,
+                position: Vec2 {
+                    x: view[0] as i32 * 256 + view[1] as i32,
+                    y: view[2] as i32
+                },
                 dir: (view[4] as i32) - 1,
                 data: enemy_data,
                 alive: true,
@@ -59,8 +61,10 @@ impl MyGame {
         let bytes = file.bytes().collect::<std::io::Result<Vec<u8>>>()?; 
 
         let obj = Object {
-            width: bytes[0] as u32,
-            height: bytes[1] as u32,
+            size: Vec2 {
+                x: bytes[0] as i32,
+                y: bytes[1] as i32
+            },
             data: util::uncompress(bytes[2..].to_vec())
         };
 

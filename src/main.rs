@@ -49,8 +49,7 @@ impl MyGame {
             main_color: 1,
             secondary_color: 0,
 
-            player_x: 3,
-            player_y: 20,
+            player_position: Vec2 { x: 3, y: 20 },
             objects_cache: HashMap::new(),
             enemies_cache: HashMap::new(),
             shots: vec![],
@@ -72,16 +71,16 @@ impl EventHandler for MyGame {
 
         let rel_time = if self.frame < 12 { self.frame } else { 12 };
 
-        if keyboard::is_key_pressed(_ctx, KeyCode::Right) && self.player_x < 84 - 10 {
-            self.player_x += 1;
-        } else if keyboard::is_key_pressed(_ctx, KeyCode::Left) && self.player_x > 0 {
-            self.player_x -= 1;
-        } else if keyboard::is_key_pressed(_ctx, KeyCode::Up) && self.player_y > 0 {
-            self.player_y -= 1;
-        } else if keyboard::is_key_pressed(_ctx, KeyCode::Down) && self.player_y < 48 - 7 {
-            self.player_y += 1;
+        if keyboard::is_key_pressed(_ctx, KeyCode::Right) && self.player_position.x < 84 - 10 {
+            self.player_position.x += 1;
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Left) && self.player_position.x > 0 {
+            self.player_position.y -= 1;
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Up) && self.player_position.y > 0 {
+            self.player_position.y -= 1;
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Down) && self.player_position.y < 48 - 7 {
+            self.player_position.y += 1;
         } else if keyboard::is_key_pressed(_ctx, KeyCode::Space) && self.frame % 6 == 0 {
-            self.shots.push(Vec2(self.player_x + 9, self.player_y + 3));
+            self.shots.push(Vec2 { x: self.player_position.x + 9, y: self.player_position.y + 3 });
         }
 
         /* let space = self.static_objects[10].clone();
@@ -100,19 +99,19 @@ impl EventHandler for MyGame {
 
         let player = self.load_object(255)?;
         // println!("{} {}", player.width, player.height);
-        self.render_object(&player, self.player_x, self.player_y)?;
+        self.render_object(&player, self.player_position.x, self.player_position.y)?;
 
         // Shots
 
         self.shots = self.shots.iter()
-            .map(|Vec2(x, y)| Vec2(x + 1, *y))
-            .filter(|Vec2(x, _)| *x < 84)
+            .map(|v| Vec2 { x: v.x + 1, y: v.y })
+            .filter(|Vec2 { x, .. }| *x < 84)
             .collect();
 
         let bullet = self.static_objects[20].clone();
 
         for shot in self.shots.clone().iter() {
-            self.render_object(&bullet, shot.0, shot.1)?;
+            self.render_object(&bullet, shot.x, shot.y)?;
         }
 
         // Enemies
@@ -121,17 +120,18 @@ impl EventHandler for MyGame {
 
         for mut enemy in self.enemies.clone() {
             let obj = self.load_object(enemy.data.model_id as u8)?;
-            let screen_x = enemy.x - self.frame as i32 / 2;
+            let screen_x = enemy.position.x - self.frame as i32;
 
             if self.frame % 10 == 0 && screen_x > -100 && screen_x < 940 {
-                let outside =
-                    self.player_x  + 10 < screen_x ||
-                    self.player_y + 7 < enemy.y ||
-                    self.player_x > screen_x + obj.width as i32 ||
-                    self.player_y > enemy.y + obj.height as i32;
+                let collission = util::intersect(
+                    self.player_position.clone(),
+                    Vec2 { x: 10, y: 7 },
+                    Vec2 { x: screen_x, y: enemy.position.y },
+                    obj.size.clone()
+                );
 
-                if !outside {
-                    let collide = util::does_collide(player.clone(), self.player_x, self.player_y, obj.clone(), screen_x, enemy.y);
+                if collission {
+                    let collide = true; // util::does_collide(player.clone(), self.player_x, self.player_y, obj.clone(), screen_x, enemy.y);
 
                     if collide {
                         println!("collission {}", self.frame);
@@ -141,14 +141,15 @@ impl EventHandler for MyGame {
                 let mut next_shots: Vec<Vec2> = vec![];
 
                 for shot in self.shots.clone().iter() {
-                    let outside =
-                        shot.0 + (bullet.width as i32) < screen_x ||
-                        shot.1 + (bullet.height as i32) < enemy.y ||
-                        shot.0 > screen_x + obj.width as i32 ||
-                        shot.1 > enemy.y + obj.height as i32;
+                    let collission = util::intersect(
+                        shot.clone(),
+                        bullet.size.clone(),
+                        Vec2 { x: screen_x, y: enemy.position.y },
+                        obj.size.clone()
+                    );
                     
-                    if !outside {
-                        let collide = util::does_collide(bullet.clone(), shot.0, shot.1, obj.clone(), screen_x, enemy.y);
+                    if collission {
+                        let collide = true; // util::does_collide(bullet.clone(), shot.0, shot.1, obj.clone(), screen_x, enemy.y);
     
                         if collide {
                             enemy.alive = false;
@@ -164,11 +165,11 @@ impl EventHandler for MyGame {
             }
             
             if enemy.alive {
-                self.render_object(&obj, screen_x, enemy.y)?;
+                self.render_object(&obj, screen_x, enemy.position.y)?;
                 next_enemies.push(enemy);
             } else if enemy.explosion_frames > 0 {
                 let explosion = self.static_objects[22 - (enemy.explosion_frames as usize - 1) / 3].clone();
-                self.render_object(&explosion, screen_x, enemy.y)?;
+                self.render_object(&explosion, screen_x, enemy.position.y)?;
                 enemy.explosion_frames -= 1;
                 next_enemies.push(enemy);
             }

@@ -3,8 +3,7 @@ use std::io::Result;
 
 #[derive(Clone)]
 pub struct Object {
-    pub width: u32,
-    pub height: u32,
+    pub size: Vec2,
     pub data: Vec<u8>
 }
 
@@ -15,8 +14,7 @@ pub struct MyGame {
     pub main_color: u8,
     pub secondary_color: u8,
 
-    pub player_x: i32,
-    pub player_y: i32,
+    pub player_position: Vec2,
     pub objects_cache: HashMap<u8, Object>,
     pub enemies_cache: HashMap<u8, EnemyData>,
     pub shots: Vec<Vec2>,
@@ -28,8 +26,7 @@ pub struct MyGame {
 #[derive(Clone)]
 pub struct Enemy {
     pub id: u8,
-    pub x: i32,
-    pub y: i32,
+    pub position: Vec2,
     pub dir: i32,
     pub data: EnemyData,
     pub alive: bool,
@@ -42,4 +39,7 @@ pub struct EnemyData {
 }
 
 #[derive(Clone)]
-pub struct Vec2(pub i32, pub i32);
+pub struct Vec2 {
+    pub x: i32,
+    pub y: i32
+}

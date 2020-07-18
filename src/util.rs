@@ -1,4 +1,4 @@
-use crate::types::Object;
+use crate::types::{Object, Vec2};
 
 use std::collections::HashMap;
 
@@ -14,7 +14,11 @@ pub fn uncompress(data: Vec<u8>) -> Vec<u8> {
     result
 }
 
-pub fn does_collide(obj1: Object, x1: i32, y1: i32, obj2: Object, x2: i32, y2: i32) -> bool {
+pub fn intersect(Start1: Vec2, Size1: Vec2, Start2: Vec2, Size2: Vec2) -> bool {
+    !(Start1.x > Start2.x + Size2.x - 1 || Start1.y > Start2.y + Size2.y - 1 || Start1.x + Size1.x - 1 < Start2.x || Start1.y + Size1.y - 1 < Start2.y)
+}
+
+/*pub fn does_collide(obj1: Object, x1: i32, y1: i32, obj2: Object, x2: i32, y2: i32) -> bool {
     let mut collisions: HashMap<(i32, i32), u32> = HashMap::new();
 
     for ry in 0..obj1.height as i32 {
@@ -40,4 +44,4 @@ pub fn does_collide(obj1: Object, x1: i32, y1: i32, obj2: Object, x2: i32, y2: i
     }
 
     collisions.values().any(|x| *x > 1)
-}
+}*/
