@@ -99,13 +99,18 @@ impl EventHandler for MyGame {
         // let obj = load_object(0)?;
         // self.render_object(&obj, 0, 0)?;
 
+
+        let player = self.load_object(255)?;
+        // println!("{} {}", player.width, player.height);
+        self.render_object(&player, self.player_x, self.player_y)?;
+
         let enemies = self.load_level(0)?;
 
         for enemy in enemies {
             let obj = self.load_object(enemy.data.model_id as u8)?;
             let screen_x = enemy.x - self.frame as i32 / 10;
 
-            if screen_x > -100 && screen_x < 940 {
+            if self.frame % 10 == 0 && screen_x > -100 && screen_x < 940 {
                 let outside =
                     self.player_x  + 10 < screen_x ||
                     self.player_y + 7 < enemy.y ||
@@ -113,16 +118,17 @@ impl EventHandler for MyGame {
                     self.player_y > enemy.y + obj.height as i32;
 
                 if !outside {
-                    println!("collission");
+                    let collide = util::does_collide(player.clone(), self.player_x, self.player_y, obj.clone(), screen_x, enemy.y);
+
+                    if collide {
+                        println!("collission {}", self.frame);
+                    }
                 }
 
-                self.render_object(&obj, screen_x, enemy.y)?;
             }
+            
+            self.render_object(&obj, screen_x, enemy.y)?;
         }
-
-        let player = self.load_object(255)?;
-        // println!("{} {}", player.width, player.height);
-        self.render_object(&player, self.player_x, self.player_y)?;
 
         self.frame += 1;
 
