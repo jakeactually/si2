@@ -1,6 +1,4 @@
-use crate::types::{Object, Vec2};
-
-use std::collections::HashMap;
+use crate::types::{Vec2};
 
 pub fn uncompress(data: Vec<u8>) -> Vec<u8> {
     let mut result = vec![];
@@ -14,8 +12,8 @@ pub fn uncompress(data: Vec<u8>) -> Vec<u8> {
     result
 }
 
-pub fn intersect(Start1: Vec2, Size1: Vec2, Start2: Vec2, Size2: Vec2) -> bool {
-    !(Start1.x > Start2.x + Size2.x - 1 || Start1.y > Start2.y + Size2.y - 1 || Start1.x + Size1.x - 1 < Start2.x || Start1.y + Size1.y - 1 < Start2.y)
+pub fn intersect(start1: Vec2, size1: Vec2, start2: Vec2, size2: Vec2) -> bool {
+    !(start1.x > start2.x + size2.x - 1 || start1.y > start2.y + size2.y - 1 || start1.x + size1.x - 1 < start2.x || start1.y + size1.y - 1 < start2.y)
 }
 
 /*pub fn does_collide(obj1: Object, x1: i32, y1: i32, obj2: Object, x2: i32, y2: i32) -> bool {

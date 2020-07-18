@@ -17,7 +17,7 @@ pub struct MyGame {
     pub player_position: Vec2,
     pub objects_cache: HashMap<u8, Object>,
     pub enemies_cache: HashMap<u8, EnemyData>,
-    pub shots: Vec<Vec2>,
+    pub shots: Vec<Shot>,
 
     pub enemies: Vec<Enemy>,
     pub is_playing: bool
@@ -42,4 +42,10 @@ pub struct EnemyData {
 pub struct Vec2 {
     pub x: i32,
     pub y: i32
+}
+
+#[derive(Clone)]
+pub struct Shot {
+    pub position: Vec2,
+    pub dirty: bool
 }

@@ -10,8 +10,8 @@ use ggez::event::{EventHandler, KeyCode};
 use ggez::{graphics, Context, ContextBuilder, GameResult};
 use ggez::conf::{WindowMode, FullscreenType};
 use ggez::input::keyboard;
-use types::{MyGame, Vec2, Enemy};
-use std::collections::HashMap;
+use types::{MyGame, Vec2, Enemy, Shot};
+use std::collections::{HashMap, HashSet};
 
 fn main() {
     let window_mode = WindowMode {
@@ -60,6 +60,12 @@ impl MyGame {
     }
 }
 
+impl Vec2 {
+    fn left(self) -> Self {
+        Vec2 { x: self.x + 1, y: self.y }
+    }
+}
+
 impl EventHandler for MyGame {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         if !self.is_playing {
@@ -80,7 +86,9 @@ impl EventHandler for MyGame {
         } else if keyboard::is_key_pressed(_ctx, KeyCode::Down) && self.player_position.y < 48 - 7 {
             self.player_position.y += 1;
         } else if keyboard::is_key_pressed(_ctx, KeyCode::Space) && self.frame % 6 == 0 {
-            self.shots.push(Vec2 { x: self.player_position.x + 9, y: self.player_position.y + 3 });
+            let position = Vec2 { x: self.player_position.x + 9, y: self.player_position.y + 3 };
+            let shot = Shot { position, dirty: false };
+            self.shots.push(shot);
         }
 
         /* let space = self.static_objects[10].clone();
@@ -98,25 +106,13 @@ impl EventHandler for MyGame {
         // Player
 
         let player = self.load_object(255)?;
-        // println!("{} {}", player.width, player.height);
         self.render_object(&player, self.player_position.x, self.player_position.y)?;
 
-        // Shots
-
-        self.shots = self.shots.iter()
-            .map(|v| Vec2 { x: v.x + 1, y: v.y })
-            .filter(|Vec2 { x, .. }| *x < 84)
-            .collect();
-
-        let bullet = self.static_objects[20].clone();
-
-        for shot in self.shots.clone().iter() {
-            self.render_object(&bullet, shot.x, shot.y)?;
-        }
-
-        // Enemies
+        // Loop
 
         let mut next_enemies: Vec<Enemy> = vec![];
+        let bullet = self.static_objects[20].clone();
+        let mut deleted_shots: HashSet<u8> = HashSet::new();
 
         for mut enemy in self.enemies.clone() {
             let obj = self.load_object(enemy.data.model_id as u8)?;
@@ -131,37 +127,22 @@ impl EventHandler for MyGame {
                 );
 
                 if collission {
-                    let collide = true; // util::does_collide(player.clone(), self.player_x, self.player_y, obj.clone(), screen_x, enemy.y);
-
-                    if collide {
-                        println!("collission {}", self.frame);
-                    }
+                    println!("collission {}", self.frame);
                 }
 
-                let mut next_shots: Vec<Vec2> = vec![];
-
-                for shot in self.shots.clone().iter() {
+                for (i, shot) in self.shots.iter().enumerate() {
                     let collission = util::intersect(
-                        shot.clone(),
+                        shot.position.clone(),
                         bullet.size.clone(),
                         Vec2 { x: screen_x, y: enemy.position.y },
                         obj.size.clone()
                     );
                     
                     if collission {
-                        let collide = true; // util::does_collide(bullet.clone(), shot.0, shot.1, obj.clone(), screen_x, enemy.y);
-    
-                        if collide {
-                            enemy.alive = false;
-                        } else {
-                            next_shots.push(shot.clone());
-                        }
-                    } else {
-                        next_shots.push(shot.clone());
+                        enemy.alive = false;
+                        deleted_shots.insert(i as u8);
                     }
                 }
-
-                self.shots = next_shots;
             }
             
             if enemy.alive {
@@ -176,6 +157,20 @@ impl EventHandler for MyGame {
         }
 
         self.enemies = next_enemies;
+
+        // Shots
+
+        let mut next_shots: Vec<Shot> = vec![];
+
+        for (i, shot) in self.shots.clone().iter().enumerate() {
+            if shot.position.x < 84 && !deleted_shots.contains(&(i as u8)) {
+                self.render_object(&bullet, shot.position.x, shot.position.y)?;
+                let new_shot = Shot { position: shot.position.clone().left(), dirty: false };
+                next_shots.push(new_shot);
+            }
+        }
+
+        self.shots = next_shots;
 
         // The end
 
