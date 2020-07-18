@@ -118,7 +118,7 @@ impl EventHandler for MyGame {
             let obj = self.load_object(enemy.data.model_id as u8)?;
             let screen_x = enemy.position.x - self.frame as i32;
 
-            if self.frame % 10 == 0 && screen_x > -100 && screen_x < 940 {
+            if screen_x > -100 && screen_x < 940 {
                 let collission = util::intersect(
                     self.player_position.clone(),
                     Vec2 { x: 10, y: 7 },
@@ -143,16 +143,16 @@ impl EventHandler for MyGame {
                         deleted_shots.insert(i as u8);
                     }
                 }
-            }
-            
-            if enemy.alive {
-                self.render_object(&obj, screen_x, enemy.position.y)?;
-                next_enemies.push(enemy);
-            } else if enemy.explosion_frames > 0 {
-                let explosion = self.static_objects[22 - (enemy.explosion_frames as usize - 1) / 3].clone();
-                self.render_object(&explosion, screen_x, enemy.position.y)?;
-                enemy.explosion_frames -= 1;
-                next_enemies.push(enemy);
+
+                if enemy.alive {
+                    self.render_object(&obj, screen_x, enemy.position.y)?;
+                    next_enemies.push(enemy);
+                } else if enemy.explosion_frames > 0 {
+                    let explosion = self.static_objects[22 - (enemy.explosion_frames as usize - 1) / 3].clone();
+                    self.render_object(&explosion, screen_x, enemy.position.y)?;
+                    enemy.explosion_frames -= 1;
+                    next_enemies.push(enemy);
+                }
             }
         }
 
