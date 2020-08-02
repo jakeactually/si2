@@ -126,10 +126,6 @@ impl EventHandler for MyGame {
                     obj.size.clone()
                 );
 
-                if collission {
-                    println!("collission {}", self.frame);
-                }
-
                 for (i, shot) in self.shots.iter().enumerate() {
                     let collission = util::intersect(
                         shot.position.clone(),
