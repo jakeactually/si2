@@ -12,6 +12,32 @@ impl Enemy {
 
         let bullet = game.static_objects[20].clone();
 
+        if true {
+            if self.dir == 1 {
+                if self.position.y < self.data.moves_between.y {
+                    self.position.y += 1;
+                } else {
+                    self.dir = -1;
+                }
+            }
+
+            if self.dir == -1 {
+                if self.position.y > self.data.moves_between.x {
+                    self.position.y -= 1;
+                } else {
+                    self.dir = 1;
+                }
+            }
+        }
+
+        if !self.data.floats {
+            //self.position.x -= 1;
+        }
+
+        if game.frame % 2 == 0 {
+            self.anim_state = (self.anim_state + 1) % self.data.anim_count;
+        }
+
         if screen_x > -100 && screen_x < 940 {
             let collission = util::intersect(
                 game.player_position.clone(),
@@ -43,7 +69,7 @@ impl Enemy {
     }
 
     pub fn render(self, game: &mut Game) -> GameResult<()> {
-        let obj = game.load_object(self.data.model_id as u8)?;
+        let obj = game.load_object(self.data.model_id as u8 + self.anim_state)?;
         let screen_x = self.position.x - game.frame as i32;
 
         if self.alive {

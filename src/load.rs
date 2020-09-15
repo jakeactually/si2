@@ -27,7 +27,8 @@ impl Game {
                 dir: (view[4] as i32) - 1,
                 data: enemy_data,
                 alive: true,
-                explosion_frames: 6
+                explosion_frames: 6,
+                anim_state: 0
             };
 
             result.push(enemy);
@@ -49,11 +50,11 @@ impl Game {
             size: Vec2 { x: 0, y: 0 },
             anim_count: bytes[1],
             lives: bytes[2] as i8,
-            floats: bytes[3],
+            floats: bytes[3] == 1,
             shot_time: bytes[4],
-            move_up: bytes[5],
-            move_down: bytes[6],
-            move_anyway: bytes[7],
+            move_up: bytes[5] == 1,
+            move_down: bytes[6] == 1,
+            move_anyway: bytes[7] == 1,
             moves_between: Vec2 { x: bytes[8] as i32, y: bytes[9] as i32 }
         };
 

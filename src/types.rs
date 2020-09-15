@@ -12,6 +12,7 @@ pub struct Game {
     pub screen: [[u8; 84]; 48],
     pub static_objects: Vec<Object>,
     pub frame: u32,
+    pub real_frame: u32,
     pub main_color: u8,
     pub secondary_color: u8,
 
@@ -24,31 +25,32 @@ pub struct Game {
     pub is_playing: bool
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Enemy {
     pub id: u8,
     pub position: Vec2,
     pub dir: i32,
     pub data: EnemyData,
     pub alive: bool,
-    pub explosion_frames: u8
+    pub explosion_frames: u8,
+    pub anim_state: u8
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct EnemyData {
     pub model_id: u8,
     pub size: Vec2,
     pub anim_count: u8,
     pub lives: i8,
-    pub floats: u8,
+    pub floats: bool,
     pub shot_time: u8,
-    pub move_up: u8,
-    pub move_down: u8,
-    pub move_anyway: u8,
+    pub move_up: bool,
+    pub move_down: bool,
+    pub move_anyway: bool,
     pub moves_between: Vec2
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Vec2 {
     pub x: i32,
     pub y: i32

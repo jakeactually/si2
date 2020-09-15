@@ -13,6 +13,7 @@ impl Game {
             screen: [[0; 84]; 48],
             static_objects: objects::get_static_objects().to_vec(),
             frame: 0,
+            real_frame: 0,
             main_color: 1,
             secondary_color: 0,
 

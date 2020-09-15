@@ -6,11 +6,19 @@ use std::collections::{HashSet};
 
 impl Game {
     pub fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
+        self.real_frame += 1;
+
+        if self.real_frame % 2 != 0 {
+            return Ok(());
+        }
+
         self.clear()?;
 
         if !self.is_playing {
             self.is_playing = true;
             self.enemies = self.load_level(0)?;
+
+            dbg!(self.enemies.clone());
         }
 
         self.keyboard(_ctx)?;
@@ -48,7 +56,7 @@ impl Game {
         self.frame += 1;
 
         Ok(())
-    }    
+    }
 
     pub fn render(&mut self) -> GameResult<()> {
         let player = self.load_object(255)?;
