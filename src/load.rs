@@ -1,10 +1,10 @@
-use crate::types::{MyGame, Enemy, Object, EnemyData, Vec2};
+use crate::types::{Game, Enemy, Object, EnemyData, Vec2};
 use crate::util;
 
 use std::fs::File;
 use std::io::Read;
 
-impl MyGame {
+impl Game {
     pub fn load_level<'a>(&mut self, id: u8) -> std::io::Result<Vec<Enemy>> {
         let file = File::open(format!("data/levels/{}.dat", id))?;
         let bytes = file.bytes().collect::<std::io::Result<Vec<u8>>>()?; 
@@ -44,12 +44,33 @@ impl MyGame {
         let file = File::open(format!("data/enemies/{}.dat", id))?;
         let bytes = file.bytes().collect::<std::io::Result<Vec<u8>>>()?; 
 
-        let model = EnemyData {
-            model_id: bytes[0]
+        let mut enemy = EnemyData {
+            model_id: bytes[0],
+            size: Vec2 { x: 0, y: 0 },
+            anim_count: bytes[1],
+            lives: bytes[2] as i8,
+            floats: bytes[3],
+            shot_time: bytes[4],
+            move_up: bytes[5],
+            move_down: bytes[6],
+            move_anyway: bytes[7],
+            moves_between: Vec2 { x: bytes[8] as i32, y: bytes[9] as i32 }
         };
 
-        self.enemies_cache.insert(id, model.clone());
-        Ok(model)
+        for _ in enemy.model_id..enemy.anim_count {
+            let obj = self.load_object(enemy.model_id)?;
+
+            if enemy.size.x < obj.size.x {
+                enemy.size.x = obj.size.x;
+            }
+
+            if enemy.size.y < obj.size.y {
+                enemy.size.y = obj.size.y;
+            }
+        }
+
+        self.enemies_cache.insert(id, enemy.clone());
+        Ok(enemy)
     }
     
     pub fn load_object<'a>(&mut self, id: u8) -> std::io::Result<Object> {

@@ -1,7 +1,7 @@
-use crate::types::{MyGame, Enemy, Object};
-use ggez::{graphics, Context, ContextBuilder, GameResult};
+use crate::types::{Game, Object};
+use ggez::{graphics, Context, GameResult};
 
-impl MyGame {
+impl Game {
     pub fn paint(&mut self, ctx: &mut Context) -> GameResult<()> {
         for (y, i) in self.screen.iter().enumerate() {
             for (x, j) in i.iter().enumerate() {

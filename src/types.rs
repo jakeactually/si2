@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::io::Result;
+use std::collections::{HashSet};
 
 #[derive(Clone)]
 pub struct Object {
@@ -7,7 +8,7 @@ pub struct Object {
     pub data: Vec<u8>
 }
 
-pub struct MyGame {
+pub struct Game {
     pub screen: [[u8; 84]; 48],
     pub static_objects: Vec<Object>,
     pub frame: u32,
@@ -35,13 +36,28 @@ pub struct Enemy {
 
 #[derive(Clone)]
 pub struct EnemyData {
-    pub model_id: u8
+    pub model_id: u8,
+    pub size: Vec2,
+    pub anim_count: u8,
+    pub lives: i8,
+    pub floats: u8,
+    pub shot_time: u8,
+    pub move_up: u8,
+    pub move_down: u8,
+    pub move_anyway: u8,
+    pub moves_between: Vec2
 }
 
 #[derive(Clone)]
 pub struct Vec2 {
     pub x: i32,
     pub y: i32
+}
+
+impl Vec2 {
+    pub fn left(self) -> Self {
+        Vec2 { x: self.x + 1, y: self.y }
+    }
 }
 
 #[derive(Clone)]
