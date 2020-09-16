@@ -18,6 +18,10 @@ pub struct Game {
     pub secondary_color: u8,
 
     pub player_position: Vec2,
+    pub player_lives: u8,
+    pub player_weapon: WeaponKind,
+    pub bonus: u8,
+    pub score: u32,
     pub objects_cache: HashMap<u8, Object>,
     pub enemies_cache: HashMap<u8, EnemyData>,
     pub shots: Vec<Shot>,
@@ -86,7 +90,7 @@ pub struct SceneryData {
 
 pub enum Graphics {
     /* Számok, 3*5-ös méretben */
-    GNum0 = 0, GNum1, GNum2, GNum3, GNum4, GNum5, GNum6, GNum7, GNum8, GNum9,
+    GNum0, GNum1, GNum2, GNum3, GNum4, GNum5, GNum6, GNum7, GNum8, GNum9,
     /* Menüelemek */
     GSpace, GIntro, GImpact, GScrollMark, GDotEmpty, GDotFull,
     /* Játékosssal kapcsolatos modellek és ikonok */
@@ -106,3 +110,11 @@ pub const scenery_data: [SceneryData; 6] = [
     SceneryData { first_object: 14, objects: 4, upper: 1 }, /* 5. szint, 14. dinamikus helytől 4 elemű, 1250 pixel széles felső táj */
     SceneryData { first_object: 14, objects: 4, upper: 1 }, /* 6. szint, az 5. szint elemeiből, 1600 pixel szélesen */
 ];
+
+#[derive(Copy, Clone)]
+pub enum WeaponKind {
+    Standard,
+    Missile,
+    Beam,
+    Wall
+}

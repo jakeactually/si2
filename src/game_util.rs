@@ -1,7 +1,7 @@
 use crate::types;
 use crate::objects;
 
-use types::{Game, Vec2, Shot, WIDTH, HEIGHT};
+use types::{Game, Vec2, Shot, WIDTH, HEIGHT, WeaponKind};
 use ggez::event::{KeyCode};
 use ggez::{Context, GameResult};
 use std::collections::{HashMap};
@@ -18,6 +18,10 @@ impl Game {
             secondary_color: 0,
 
             player_position: Vec2 { x: 3, y: 20 },
+            player_lives: 3,
+            player_weapon: WeaponKind::Standard,
+            bonus: 3,
+            score: 0,
             objects_cache: HashMap::new(),
             enemies_cache: HashMap::new(),
             shots: vec![],
