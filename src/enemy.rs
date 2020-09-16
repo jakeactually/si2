@@ -61,12 +61,15 @@ impl Enemy {
                 );
                 
                 if collission {
-                    self.alive = false;
-                    deleted_shots.insert(i as u8);
+                    self.data.lives -= 1;
+
+                    if self.data.lives <= 0 {
+                        deleted_shots.insert(i as u8);
+                    }
                 }
             }
 
-            if !self.alive && self.explosion_frames > 0 {
+            if self.data.lives <= 0 && self.explosion_frames > 0 {
                 self.explosion_frames -= 1;
             }
         }
@@ -78,7 +81,7 @@ impl Enemy {
         let obj = game.load_object(self.data.model_id + self.anim_state)?;
         let screen_x = game.enemies_x + self.position.x;
 
-        if self.alive {
+        if self.data.lives > 0 {
             game.render_object(&obj, screen_x, self.position.y)?;
         } else if self.explosion_frames > 0 {
             let explosion = game.static_objects[22 - (self.explosion_frames as usize - 1) / 3].clone();
