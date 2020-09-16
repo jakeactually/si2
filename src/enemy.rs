@@ -7,26 +7,28 @@ use std::collections::{HashSet};
 
 impl Enemy {
     pub fn tick(&mut self, deleted_shots: &mut HashSet<u8>, game: &mut Game) -> GameResult<()> {
-        let obj = game.load_object(self.data.model_id as u8)?;
         let screen_x = self.position.x - game.frame as i32;
 
+        if screen_x > 100 {
+            return Ok(());
+        }
+
+        let obj = game.load_object(self.data.model_id as u8)?;
         let bullet = game.static_objects[20].clone();
 
-        if true {
-            if self.dir == 1 {
-                if self.position.y < self.data.moves_between.y {
-                    self.position.y += 1;
-                } else {
-                    self.dir = -1;
-                }
+        if self.dir == 1 {
+            if self.position.y < self.data.moves_between.y {
+                self.position.y += 1;
+            } else {
+                self.dir = if self.data.move_up { -1 } else { 0 };
             }
+        }
 
-            if self.dir == -1 {
-                if self.position.y > self.data.moves_between.x {
-                    self.position.y -= 1;
-                } else {
-                    self.dir = 1;
-                }
+        if self.dir == -1 {
+            if self.position.y > self.data.moves_between.x {
+                self.position.y -= 1;
+            } else {
+                self.dir = if self.data.move_down { 1 } else { 0 };
             }
         }
 

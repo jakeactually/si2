@@ -1,6 +1,7 @@
 use std::collections::HashMap;
-use std::io::Result;
-use std::collections::{HashSet};
+
+pub const WIDTH: u8 = 84;
+pub const HEIGHT: u8 = 48;
 
 #[derive(Clone)]
 pub struct Object {
@@ -22,7 +23,9 @@ pub struct Game {
     pub shots: Vec<Shot>,
 
     pub enemies: Vec<Enemy>,
-    pub is_playing: bool
+    pub is_playing: bool,
+
+    pub scenery: Vec<Scenery>
 }
 
 #[derive(Clone, Debug)]
@@ -67,3 +70,39 @@ pub struct Shot {
     pub position: Vec2,
     pub dirty: bool
 }
+
+#[derive(Clone)]
+pub struct Scenery {
+    pub position: Vec2,
+    pub model: Object
+}
+
+#[derive(Clone)]
+pub struct SceneryData {
+    pub first_object: u8,
+    pub objects: u8,
+    pub upper: u8
+}
+
+pub enum Graphics {
+    /* Számok, 3*5-ös méretben */
+    GNum0 = 0, GNum1, GNum2, GNum3, GNum4, GNum5, GNum6, GNum7, GNum8, GNum9,
+    /* Menüelemek */
+    GSpace, GIntro, GImpact, GScrollMark, GDotEmpty, GDotFull,
+    /* Játékosssal kapcsolatos modellek és ikonok */
+    GLife, /* Életjel */
+    GMissileIcon, /* Rakéta ikonja */
+    GBeamIcon,/* SuGár ikonja */
+    GWallIcon, /* Fal ikonja */
+    GShot, /* Lövés */
+    GExplosionA1, GExplosionA2 /* Robbanás animáció 2 lépése */
+}
+
+pub const scenery_data: [SceneryData; 6] = [
+    SceneryData { first_object: 0, objects: 0, upper: 0 }, /* Az 1. szinten nincs táj */
+    SceneryData { first_object: 0, objects: 2, upper: 0 }, /* 2. szint, 0. dinamikus helytől 2 elemű, 700 pixel széles táj */
+    SceneryData { first_object: 2, objects: 6, upper: 0 }, /* 3. szint, 2. dinamikus helytől 6 elemű, 750 pixel széles táj */
+    SceneryData { first_object: 8, objects: 6, upper: 0 }, /* 4. szint, 8. dinamikus helytől 6 elemű, 1000 pixel széles táj */
+    SceneryData { first_object: 14, objects: 4, upper: 1 }, /* 5. szint, 14. dinamikus helytől 4 elemű, 1250 pixel széles felső táj */
+    SceneryData { first_object: 14, objects: 4, upper: 1 }, /* 6. szint, az 5. szint elemeiből, 1600 pixel szélesen */
+];

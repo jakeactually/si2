@@ -12,12 +12,12 @@ mod render;
 use ggez::event::{EventHandler};
 use ggez::{graphics, Context, ContextBuilder, GameResult};
 use ggez::conf::{WindowMode, FullscreenType};
-use types::{Game};
+use types::{Game, WIDTH, HEIGHT};
 
 fn main() {
     let window_mode = WindowMode {
-        width: 840.0,
-        height: 480.0,
+        width: WIDTH as f32 * 10.0,
+        height: HEIGHT as f32 * 10.0,
         maximized: false,
         fullscreen_type: FullscreenType::Windowed,
         borderless: false,

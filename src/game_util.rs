@@ -1,7 +1,7 @@
 use crate::types;
 use crate::objects;
 
-use types::{Game, Vec2, Shot};
+use types::{Game, Vec2, Shot, WIDTH, HEIGHT};
 use ggez::event::{KeyCode};
 use ggez::{Context, GameResult};
 use std::collections::{HashMap};
@@ -10,7 +10,7 @@ use ggez::input::keyboard;
 impl Game {
     pub fn new(_ctx: &mut Context) -> Game {
         Game {
-            screen: [[0; 84]; 48],
+            screen: [[0; WIDTH as usize]; HEIGHT as usize],
             static_objects: objects::get_static_objects().to_vec(),
             frame: 0,
             real_frame: 0,
@@ -23,20 +23,24 @@ impl Game {
             shots: vec![],
             
             enemies: vec![],
-            is_playing: false
+            is_playing: false,
+
+            scenery: vec![]
         }
     }
 
     pub fn keyboard(&mut self, _ctx: &mut Context) -> GameResult<()> {
-        if keyboard::is_key_pressed(_ctx, KeyCode::Right) && self.player_position.x < 84 - 10 {
+        if keyboard::is_key_pressed(_ctx, KeyCode::Right) && self.player_position.x < WIDTH as i32 - 10 {
             self.player_position.x += 1;
         } else if keyboard::is_key_pressed(_ctx, KeyCode::Left) && self.player_position.x > 0 {
             self.player_position.y -= 1;
         } else if keyboard::is_key_pressed(_ctx, KeyCode::Up) && self.player_position.y > 0 {
             self.player_position.y -= 1;
-        } else if keyboard::is_key_pressed(_ctx, KeyCode::Down) && self.player_position.y < 48 - 7 {
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Down) && self.player_position.y < HEIGHT as i32 - 7 {
             self.player_position.y += 1;
-        } else if keyboard::is_key_pressed(_ctx, KeyCode::Space) && self.frame % 6 == 0 {
+        }
+        
+        if keyboard::is_key_pressed(_ctx, KeyCode::Space) && self.frame % 6 == 0 {
             let position = Vec2 { x: self.player_position.x + 9, y: self.player_position.y + 3 };
             let shot = Shot { position, dirty: false };
             self.shots.push(shot);

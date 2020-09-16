@@ -1,8 +1,9 @@
 use crate::types;
 
-use types::{Game, Shot, Enemy};
+use types::{Game, Shot, Enemy, scenery_data, Vec2, Scenery, WIDTH, HEIGHT};
 use ggez::{Context, GameResult};
 use std::collections::{HashSet};
+use rand::Rng;
 
 impl Game {
     pub fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
@@ -16,9 +17,23 @@ impl Game {
 
         if !self.is_playing {
             self.is_playing = true;
-            self.enemies = self.load_level(0)?;
+            self.enemies = self.load_level(1)?;
 
-            dbg!(self.enemies.clone());
+            let mut x = 0;
+            let mut rng = rand::thread_rng();
+
+            while x < 1600 {
+                let sd = &scenery_data[1];
+                let n1: u8 = rng.gen_range(sd.first_object, sd.first_object + sd.objects);
+                let obj = self.load_object(n1)?;
+
+                self.scenery.push(Scenery {
+                    position: Vec2 { x: x, y: HEIGHT as i32 - obj.size.y },
+                    model: obj.clone()
+                });
+
+                x += obj.size.x;
+            }
         }
 
         self.keyboard(_ctx)?;
@@ -43,7 +58,7 @@ impl Game {
         let mut next_shots: Vec<Shot> = vec![];
 
         for (i, shot) in self.shots.iter().enumerate() {
-            if shot.position.x < 84 && !deleted_shots.contains(&(i as u8)) {
+            if shot.position.x < WIDTH as i32 && !deleted_shots.contains(&(i as u8)) {
                 let new_shot = Shot { position: shot.position.clone().left(), dirty: false };
                 next_shots.push(new_shot);
             }
@@ -61,6 +76,10 @@ impl Game {
     pub fn render(&mut self) -> GameResult<()> {
         let player = self.load_object(255)?;
         self.render_object(&player, self.player_position.x, self.player_position.y)?;
+
+        for scenery in self.scenery.clone() {
+            self.render_object(&scenery.model, scenery.position.x - self.frame as i32, scenery.position.y)?;
+        }
 
         for enemy in self.enemies.clone() {
             enemy.render(self)?;

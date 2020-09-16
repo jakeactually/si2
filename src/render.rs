@@ -1,5 +1,7 @@
-use crate::types::{Game, Object};
+use crate::types;
+
 use ggez::{graphics, Context, GameResult};
+use types::{WIDTH, HEIGHT, Game, Object};
 
 impl Game {
     pub fn paint(&mut self, ctx: &mut Context) -> GameResult<()> {
@@ -17,7 +19,7 @@ impl Game {
     }
 
     pub fn pixel(&mut self, ax: i32, ay: i32) -> GameResult<()> {
-        let inside = ax >= 0 && ay >= 0 && ax < 84 && ay < 48;
+        let inside = ax >= 0 && ay >= 0 && ax < WIDTH as i32 && ay < HEIGHT as i32;
         
         if inside {
             self.screen[ay as usize][ax as usize] = self.main_color;
@@ -27,9 +29,9 @@ impl Game {
     }
 
     pub fn clear(&mut self) -> GameResult<()> {
-        for y in 0..48 {
-            for x in 0..84 {
-                self.screen[y][x] = 0;
+        for y in 0..HEIGHT {
+            for x in 0..WIDTH {
+                self.screen[y as usize][x as usize] = 0;
             }
         }
 
