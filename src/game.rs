@@ -49,7 +49,7 @@ impl Game {
         // The end
 
         if let Some(enemy) = self.enemies.last() {
-            if self.scene_x + enemy.position.x < WIDTH as i32 / 2 {
+            if self.enemies_x + enemy.position.x >= (WIDTH as i32 / 4) * 3 {
                 self.scene_x -= 1;
             }
         }

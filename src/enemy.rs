@@ -17,7 +17,7 @@ impl Enemy {
             self.anim_state = (self.anim_state + 1) % self.data.anim_count;
         }
 
-        if screen_x > (WIDTH as i32 / 4) * 3 {
+        if screen_x > WIDTH as i32 / 4 * 3 - 10 {
             return Ok(());
         }
 

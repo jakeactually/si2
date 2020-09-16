@@ -29,7 +29,7 @@ impl Game {
             shots: vec![],
             
             moving: true,
-            level: 0,
+            level: 1,
             enemies: vec![],
             is_playing: false,
             scenery: vec![]
