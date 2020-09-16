@@ -93,9 +93,9 @@ impl Game {
         let bullet = self.static_objects[20].clone();
 
         for shot in self.shots.clone().iter() {
-            if self.scene_x + shot.position.x < WIDTH as i32 {
+            //if shot.position.x < WIDTH as i32 {
                 self.render_object(&bullet, shot.position.x, shot.position.y)?;
-            }
+            //}
         }
 
         Ok(())
