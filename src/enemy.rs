@@ -1,16 +1,28 @@
 use crate::types;
 use crate::util;
 
-use types::{Enemy, Game, Vec2};
+use types::{Enemy, Game, Vec2, WIDTH};
 use ggez::{GameResult};
 use std::collections::{HashSet};
 
 impl Enemy {
     pub fn tick(&mut self, deleted_shots: &mut HashSet<u8>, game: &mut Game) -> GameResult<()> {
-        let screen_x = self.position.x - game.frame as i32;
+        let screen_x = game.enemies_x + self.position.x;
 
-        if screen_x > 100 {
+        if screen_x > WIDTH as i32 || screen_x < 0 {
             return Ok(());
+        }
+
+        if game.enemies_x % 4 == 0 {
+            self.anim_state = (self.anim_state + 1) % self.data.anim_count;
+        }
+
+        if screen_x > (WIDTH as i32 / 4) * 3 {
+            return Ok(());
+        }
+
+        if self.data.floats {
+            self.position.x += 1;
         }
 
         let obj = game.load_object(self.data.model_id as u8)?;
@@ -30,14 +42,6 @@ impl Enemy {
             } else {
                 self.dir = if self.data.move_down { 1 } else { 0 };
             }
-        }
-
-        if !self.data.floats {
-            //self.position.x -= 1;
-        }
-
-        if game.frame % 2 == 0 {
-            self.anim_state = (self.anim_state + 1) % self.data.anim_count;
         }
 
         if screen_x > -100 && screen_x < 940 {
@@ -71,8 +75,8 @@ impl Enemy {
     }
 
     pub fn render(self, game: &mut Game) -> GameResult<()> {
-        let obj = game.load_object(self.data.model_id as u8 + self.anim_state)?;
-        let screen_x = self.position.x - game.frame as i32;
+        let obj = game.load_object(self.data.model_id + self.anim_state)?;
+        let screen_x = game.enemies_x + self.position.x;
 
         if self.alive {
             game.render_object(&obj, screen_x, self.position.y)?;

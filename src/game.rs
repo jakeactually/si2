@@ -7,33 +7,13 @@ use rand::Rng;
 
 impl Game {
     pub fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
-        self.real_frame += 1;
-
-        if self.real_frame % 2 != 0 {
-            return Ok(());
-        }
-
         self.clear()?;
 
         if !self.is_playing {
             self.is_playing = true;
-            self.enemies = self.load_level(1)?;
-
-            let mut x = 0;
-            let mut rng = rand::thread_rng();
-
-            while x < 1600 {
-                let sd = &scenery_data[1];
-                let n1: u8 = rng.gen_range(sd.first_object, sd.first_object + sd.objects);
-                let obj = self.load_object(n1)?;
-
-                self.scenery.push(Scenery {
-                    position: Vec2 { x: x, y: HEIGHT as i32 - obj.size.y },
-                    model: obj.clone()
-                });
-
-                x += obj.size.x;
-            }
+            self.enemies = self.load_level(self.level)?;
+            // dbg!(self.enemies.clone());
+            self.load_scenery()?;            
         }
 
         self.keyboard(_ctx)?;
@@ -68,7 +48,13 @@ impl Game {
 
         // The end
 
-        self.frame += 1;
+        if let Some(enemy) = self.enemies.last() {
+            if self.scene_x + enemy.position.x < WIDTH as i32 / 2 {
+                self.scene_x -= 1;
+            }
+        }
+
+        self.enemies_x -= 1;
 
         Ok(())
     }
@@ -93,17 +79,23 @@ impl Game {
         self.render_object(&number, 71, 0)?;
 
         for scenery in self.scenery.clone() {
-            self.render_object(&scenery.model, scenery.position.x - self.frame as i32, scenery.position.y)?;
+            if self.scene_x + scenery.position.x < WIDTH as i32 {
+                self.render_object(&scenery.model, self.scene_x + scenery.position.x, scenery.position.y)?;
+            }
         }
 
         for enemy in self.enemies.clone() {
-            enemy.render(self)?;
+            if self.enemies_x + enemy.position.x < WIDTH as i32 {
+                enemy.render(self)?;
+            }
         }
 
         let bullet = self.static_objects[20].clone();
 
         for shot in self.shots.clone().iter() {
-            self.render_object(&bullet, shot.position.x, shot.position.y)?;
+            if self.scene_x + shot.position.x < WIDTH as i32 {
+                self.render_object(&bullet, shot.position.x, shot.position.y)?;
+            }
         }
 
         Ok(())

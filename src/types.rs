@@ -12,8 +12,8 @@ pub struct Object {
 pub struct Game {
     pub screen: [[u8; 84]; 48],
     pub static_objects: Vec<Object>,
-    pub frame: u32,
-    pub real_frame: u32,
+    pub scene_x: i32,
+    pub enemies_x: i32,
     pub main_color: u8,
     pub secondary_color: u8,
 
@@ -26,9 +26,10 @@ pub struct Game {
     pub enemies_cache: HashMap<u8, EnemyData>,
     pub shots: Vec<Shot>,
 
+    pub moving: bool,
+    pub level: u8,
     pub enemies: Vec<Enemy>,
     pub is_playing: bool,
-
     pub scenery: Vec<Scenery>
 }
 
