@@ -37,7 +37,7 @@ impl Game {
             .enemies
             .clone()
             .into_iter()
-            .filter(|e| e.alive() && e.explosion_frames > 0 && enemies_x + e.position.x > -20)
+            .filter(|e| e.active() && enemies_x + e.position.x > -20)
             .map(|e| e.tick(self))
             .collect::<GameResult<Vec<_>>>()?;
 

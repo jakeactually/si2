@@ -1,7 +1,7 @@
 use crate::types;
 use crate::util;
 
-use types::{Enemy, Game, Vec2, WIDTH};
+use types::{Enemy, Game, Vec2, WIDTH, Graphics};
 use ggez::{GameResult};
 
 impl Enemy {
@@ -39,8 +39,7 @@ impl Enemy {
 
             if collission {
                 if self.is_bonus() {
-                    self.data.lives = 0;
-                    self.explosion_frames = 0;
+                    self.delete();
                     game.bonus += 3;
                 } else {
                     if !game.player.protected() {                        
@@ -48,7 +47,7 @@ impl Enemy {
                         game.player.protection = 50;
                     }
                     
-                    self.data.lives -= 1;
+                    self.damage();
                 }
             }
 
@@ -63,14 +62,14 @@ impl Enemy {
                 if collission {
                     if self.is_bonus() {
                     } else {
-                        shot.active = false;
-                        self.data.lives -= 1;
+                        shot.active = false;                        
+                        self.damage();
                     }
                 }
             }
 
-            if !self.alive() && self.explosion_frames > 0 {
-                self.explosion_frames -= 1;
+            if game.time % 2 == 0 {
+                self.die();
             }
         }
 
@@ -99,10 +98,10 @@ impl Enemy {
         let obj = game.load_object(self.data.model_id + self.anim_state)?;
         let screen_x = game.enemies_x + self.position.x;
 
-        if self.alive(){
+        if self.alive() {
             game.render_object(&obj, screen_x, self.position.y)?;
         } else if self.explosion_frames > 0 {
-            let explosion = game.static_objects[22 - (self.explosion_frames as usize - 1) / 3].clone();
+            let explosion = game.static_objects[Graphics::GExplosionA1 as usize - self.explosion_frames as usize + 2].clone();
             game.render_object(&explosion, screen_x, self.position.y)?;
         }
 

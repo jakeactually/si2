@@ -73,6 +73,27 @@ impl Enemy {
     pub fn is_bonus(&self) -> bool {
         self.data.lives == 127
     }
+
+    pub fn active(&self) -> bool {
+        self.alive() || self.explosion_frames > 0
+    }
+
+    pub fn damage(&mut self) {
+        if self.alive() {
+            self.data.lives -= 1;
+        }
+    }
+
+    pub fn die(&mut self) {
+        if !self.alive() && self.explosion_frames > 0 {
+            self.explosion_frames -= 1;
+        }
+    }
+
+    pub fn delete(&mut self) {        
+        self.data.lives = 0;
+        self.explosion_frames = 0;
+    }
 }
 
 #[derive(Clone)]
