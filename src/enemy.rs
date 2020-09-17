@@ -31,11 +31,16 @@ impl Enemy {
 
         if screen_x > -100 && screen_x < 940 {
             let collission = util::intersect(
-                game.player_position.clone(),
+                game.player.position.clone(),
                 Vec2 { x: 10, y: 7 },
                 Vec2 { x: screen_x, y: self.position.y },
                 obj.size.clone()
             );
+
+            if collission && !game.player.protected() {
+                game.player.lives -= 1;
+                game.player.protection = 50;
+            }
 
             for shot in game.shots.iter_mut() {
                 let collission = util::intersect(

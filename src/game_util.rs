@@ -1,7 +1,7 @@
 use crate::types;
 use crate::objects;
 
-use types::{Game, Vec2, Shot, WIDTH, HEIGHT, WeaponKind, scenery_data, Scenery};
+use types::{Game, Vec2, Shot, WIDTH, HEIGHT, WeaponKind, scenery_data, Scenery, Player};
 use ggez::event::{KeyCode};
 use ggez::{Context, GameResult};
 use std::collections::{HashMap};
@@ -13,43 +13,49 @@ impl Game {
     pub fn new(_ctx: &mut Context) -> Game {
         Game {
             screen: [[0; WIDTH as usize]; HEIGHT as usize],
-            static_objects: objects::get_static_objects().to_vec(),
-            time: 0,
-            scene_x: 0,
-            enemies_x: 0,
             main_color: 1,
             secondary_color: 0,
 
-            player_position: Vec2 { x: 3, y: 20 },
-            player_lives: 3,
-            player_weapon: WeaponKind::Standard,
-            bonus: 3,
-            score: 0,
+            static_objects: objects::get_static_objects().to_vec(),
             objects_cache: HashMap::new(),
             enemies_cache: HashMap::new(),
-            shots: vec![],
-            
-            moving: true,
-            level: 1,
+
+            scenery: vec![],
             enemies: vec![],
+            shots: vec![],
+
             is_playing: false,
-            scenery: vec![]
+            level: 1,
+            time: 0,
+            scene_x: 0,
+            enemies_x: 0,
+
+            player: Player {
+                position: Vec2 { x: 3, y: 20 },
+                lives: 3,
+                weapon: WeaponKind::Standard,
+                protection: 0,
+            },
+            bonus: 3,
+            score: 0,
         }
     }
 
     pub fn keyboard(&mut self, _ctx: &mut Context) -> GameResult<()> {
-        if keyboard::is_key_pressed(_ctx, KeyCode::Right) && self.player_position.x < WIDTH as i32 - 10 {
-            self.player_position.x += 1;
-        } else if keyboard::is_key_pressed(_ctx, KeyCode::Left) && self.player_position.x > 0 {
-            self.player_position.x -= 1;
-        } else if keyboard::is_key_pressed(_ctx, KeyCode::Up) && self.player_position.y > 5 {
-            self.player_position.y -= 1;
-        } else if keyboard::is_key_pressed(_ctx, KeyCode::Down) && self.player_position.y < HEIGHT as i32 - 7 {
-            self.player_position.y += 1;
+        let position = &mut self.player.position;
+
+        if keyboard::is_key_pressed(_ctx, KeyCode::Right) && position.x < WIDTH as i32 - 10 {
+            position.x += 1;
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Left) && position.x > 0 {
+            position.x -= 1;
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Up) && position.y > 5 {
+            position.y -= 1;
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Down) && position.y < HEIGHT as i32 - 7 {
+            position.y += 1;
         }
         
         if keyboard::is_key_pressed(_ctx, KeyCode::Space) && self.time % 6 == 0 {
-            let position = Vec2 { x: self.player_position.x + 9, y: self.player_position.y + 3 };
+            let position = Vec2 { x: position.x + 9, y: position.y + 3 };
             let shot = Shot { position, active: true };
             self.shots.push(shot);
         }

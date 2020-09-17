@@ -1,8 +1,7 @@
 use crate::types;
 
-use types::{Game, Shot, Enemy, WIDTH, Graphics};
-use ggez::{Context, GameResult, GameError};
-use std::collections::{HashSet};
+use types::{Game, WIDTH, Graphics, G_PLAYER, G_PROTECTION_A1};
+use ggez::{Context, GameResult};
 
 impl Game {
     pub fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
@@ -43,6 +42,10 @@ impl Game {
             }
         }
 
+        if self.player.protected() {
+            self.player.protection -= 1;
+        }
+
         self.time += 1;
         self.enemies_x -= 1;
 
@@ -50,15 +53,20 @@ impl Game {
     }
 
     pub fn render(&mut self) -> GameResult<()> {
-        let player = self.load_object(255)?;
-        self.render_object(&player, self.player_position.x, self.player_position.y)?;
+        if self.player.protected() {
+            let player = self.load_object(G_PROTECTION_A1 + self.player.protection / 2 % 2)?;
+            self.render_object(&player, self.player.position.x - 2, self.player.position.y - 2)?;
+        } else {
+            let player = self.load_object(G_PLAYER)?;
+            self.render_object(&player, self.player.position.x, self.player.position.y)?;
+        }
 
         let heart = self.static_objects[Graphics::GLife as usize].clone();
-        for i in 0..self.player_lives {
+        for i in 0..self.player.lives {
             self.render_object(&heart, i as i32 * 6, 0)?;
         }
 
-        let index = Graphics::GLife as usize + self.player_weapon as usize + 1;
+        let index = Graphics::GLife as usize + self.player.weapon.clone() as usize + 1;
         let weapon = self.static_objects[index].clone();
         self.render_object(&weapon, 33, 0)?;
 
@@ -80,7 +88,7 @@ impl Game {
             }
         }
 
-        let bullet = self.static_objects[20].clone();
+        let bullet = self.static_objects[Graphics::GShot as usize].clone();
 
         for shot in self.shots.clone().iter() {
             self.render_object(&bullet, shot.position.x, shot.position.y)?;

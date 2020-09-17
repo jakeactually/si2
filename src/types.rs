@@ -3,6 +3,14 @@ use std::collections::HashMap;
 pub const WIDTH: u8 = 84;
 pub const HEIGHT: u8 = 48;
 
+/* Fájlba áthelyezett objektumok */
+pub const G_PROTECTION_A1: u8 = 250;
+pub const G_PROTECTION_A2: u8 = 251;
+pub const G_MISSILE: u8 = 252;
+pub const G_BEAM: u8 = 253;
+pub const G_WALL: u8 = 254;
+pub const G_PLAYER: u8 = 255;
+
 #[derive(Clone)]
 pub struct Object {
     pub size: Vec2,
@@ -10,31 +18,44 @@ pub struct Object {
 }
 
 pub struct Game {
-    pub screen: [[u8; 84]; 48],
-    pub static_objects: Vec<Object>,
-    pub time: u32,
-    pub scene_x: i32,
-    pub enemies_x: i32,
+    pub screen: [[u8; WIDTH as usize]; HEIGHT as usize],
     pub main_color: u8,
     pub secondary_color: u8,
 
-    pub player_position: Vec2,
-    pub player_lives: u8,
-    pub player_weapon: WeaponKind,
-    pub bonus: u8,
-    pub score: u32,
+    pub static_objects: Vec<Object>,
     pub objects_cache: HashMap<u8, Object>,
     pub enemies_cache: HashMap<u8, EnemyData>,
+
+    pub scenery: Vec<Scenery>,
+    pub enemies: Vec<Enemy>,
     pub shots: Vec<Shot>,
 
-    pub moving: bool,
-    pub level: u8,
-    pub enemies: Vec<Enemy>,
     pub is_playing: bool,
-    pub scenery: Vec<Scenery>
+    pub level: u8,
+    pub time: u32,
+    pub scene_x: i32,
+    pub enemies_x: i32,
+
+    pub player: Player,
+    pub bonus: u8,
+    pub score: u32,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
+pub struct Player {
+    pub position: Vec2,
+    pub lives: u8,
+    pub weapon: WeaponKind,
+    pub protection: u8,
+}
+
+impl Player {
+    pub fn protected(&self) -> bool {
+        self.protection > 0
+    }
+}
+
+#[derive(Clone)]
 pub struct Enemy {
     pub id: u8,
     pub position: Vec2,
@@ -50,7 +71,7 @@ impl Enemy {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct EnemyData {
     pub model_id: u8,
     pub size: Vec2,
@@ -64,7 +85,7 @@ pub struct EnemyData {
     pub moves_between: Vec2
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Vec2 {
     pub x: i32,
     pub y: i32
@@ -124,7 +145,7 @@ pub const scenery_data: [SceneryData; 6] = [
     SceneryData { first_object: 14, objects: 4, upper: 1 }, /* 6. szint, az 5. szint elemeiből, 1600 pixel szélesen */
 ];
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub enum WeaponKind {
     Standard,
     Missile,
