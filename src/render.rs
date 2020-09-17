@@ -90,4 +90,17 @@ impl Game {
 
         Ok(())
     }
+
+    pub fn render_number(&mut self, n: u32, digits: u8, x: i32, y: i32) -> GameResult<()> {
+        let mut ox = 0;
+
+        for i in 0..digits as u32 {
+            let obj = self.static_objects[(n / (10_u32.pow(i)) % 10) as usize].clone();
+            self.render_object(&obj, ox + x, y)?;
+
+            ox -= 4;
+        }
+
+        Ok(())
+    }
 }

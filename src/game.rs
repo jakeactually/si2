@@ -70,11 +70,8 @@ impl Game {
         let weapon = self.static_objects[index].clone();
         self.render_object(&weapon, 33, 0)?;
 
-        let number = self.static_objects[self.bonus as usize].clone();
-        self.render_object(&number, 43, 0)?;
-
-        let number = self.static_objects[self.score as usize].clone();
-        self.render_object(&number, 71, 0)?;
+        self.render_number(self.bonus as u32, 2, 43, 0)?;
+        self.render_number(self.score, 5, 71, 0)?;
 
         for scenery in self.scenery.clone() {
             if self.scene_x + scenery.position.x < WIDTH as i32 {

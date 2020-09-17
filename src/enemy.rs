@@ -37,9 +37,15 @@ impl Enemy {
                 obj.size.clone()
             );
 
-            if collission && !game.player.protected() {
-                game.player.lives -= 1;
-                game.player.protection = 50;
+            if collission {
+                if self.is_bonus() {
+                    self.data.lives = 0;
+                    self.explosion_frames = 0;
+                    game.bonus += 3;
+                } else if !game.player.protected() {                        
+                    game.player.lives -= 1;
+                    game.player.protection = 50;
+                }
             }
 
             for shot in game.shots.iter_mut() {
@@ -51,8 +57,11 @@ impl Enemy {
                 );
                 
                 if collission {
-                    shot.active = false;
-                    self.data.lives -= 1;
+                    if self.is_bonus() {
+                    } else {
+                        shot.active = false;
+                        self.data.lives -= 1;
+                    }
                 }
             }
 

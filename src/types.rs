@@ -69,6 +69,10 @@ impl Enemy {
     pub fn alive(&self) -> bool {
         self.data.lives > 0
     }
+
+    pub fn is_bonus(&self) -> bool {
+        self.data.lives == 127
+    }
 }
 
 #[derive(Clone)]
