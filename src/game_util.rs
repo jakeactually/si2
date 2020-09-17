@@ -25,7 +25,7 @@ impl Game {
             shots: vec![],
 
             is_playing: false,
-            level: 1,
+            level: 0,
             time: 0,
             scene_x: 0,
             enemies_x: 0,
@@ -79,6 +79,8 @@ impl Game {
     }
 
     pub fn load_scenery(&mut self) -> GameResult<()> {
+        self.scenery = vec![];
+
         let mut x = 0;
         let mut rng = rand::thread_rng();
 

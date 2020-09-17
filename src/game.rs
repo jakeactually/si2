@@ -1,6 +1,6 @@
 use crate::types;
 
-use types::{Game, WIDTH, Graphics, G_PLAYER, G_PROTECTION_A1};
+use types::{Game, WIDTH, Graphics, G_PLAYER, G_PROTECTION_A1, Vec2};
 use ggez::{Context, GameResult};
 
 impl Game {
@@ -9,18 +9,35 @@ impl Game {
         self.keyboard(_ctx)?;
 
         if !self.is_playing {
-            self.is_playing = true;
             self.enemies = self.load_level(self.level)?;
-            self.load_scenery()?;            
+            self.load_scenery()?; 
+
+            self.player.position = Vec2 { x: 3, y: 20 };
+            self.scene_x = 0;
+            self.enemies_x = 0;
+            self.level += 1;
+
+            self.is_playing = true;
         }
 
         // Enemies
+
+        if self.enemies.len() == 0 {
+            self.player.position.x += 1;
+        }
+
+        if self.player.position.x > WIDTH as i32 + 20 {
+            self.is_playing = false;
+            return Ok(())
+        }
+
+        let enemies_x = self.enemies_x;
 
         self.enemies = self
             .enemies
             .clone()
             .into_iter()
-            .filter(|e| e.alive() || e.explosion_frames > 0)
+            .filter(|e| e.alive() && e.explosion_frames > 0 && enemies_x + e.position.x > -20)
             .map(|e| e.tick(self))
             .collect::<GameResult<Vec<_>>>()?;
 
