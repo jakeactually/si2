@@ -42,9 +42,13 @@ impl Enemy {
                     self.data.lives = 0;
                     self.explosion_frames = 0;
                     game.bonus += 3;
-                } else if !game.player.protected() {                        
-                    game.player.lives -= 1;
-                    game.player.protection = 50;
+                } else {
+                    if !game.player.protected() {                        
+                        game.player.lives -= 1;
+                        game.player.protection = 50;
+                    }
+                    
+                    self.data.lives -= 1;
                 }
             }
 
