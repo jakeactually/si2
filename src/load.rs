@@ -26,7 +26,6 @@ impl Game {
                 },
                 dir: (view[4] as i32) - 1,
                 data: enemy_data,
-                alive: true,
                 explosion_frames: 6,
                 anim_state: 0
             };

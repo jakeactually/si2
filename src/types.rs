@@ -12,6 +12,7 @@ pub struct Object {
 pub struct Game {
     pub screen: [[u8; 84]; 48],
     pub static_objects: Vec<Object>,
+    pub time: u32,
     pub scene_x: i32,
     pub enemies_x: i32,
     pub main_color: u8,
@@ -39,9 +40,14 @@ pub struct Enemy {
     pub position: Vec2,
     pub dir: i32,
     pub data: EnemyData,
-    pub alive: bool,
     pub explosion_frames: u8,
     pub anim_state: u8
+}
+
+impl Enemy {
+    pub fn alive(&self) -> bool {
+        self.data.lives > 0
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -73,7 +79,13 @@ impl Vec2 {
 #[derive(Clone)]
 pub struct Shot {
     pub position: Vec2,
-    pub dirty: bool
+    pub active: bool
+}
+
+impl Shot {
+    pub fn left(self) -> Shot {
+        Shot { position: self.position.left(), active: self.active }
+    }
 }
 
 #[derive(Clone)]

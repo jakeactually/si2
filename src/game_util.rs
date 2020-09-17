@@ -14,6 +14,7 @@ impl Game {
         Game {
             screen: [[0; WIDTH as usize]; HEIGHT as usize],
             static_objects: objects::get_static_objects().to_vec(),
+            time: 0,
             scene_x: 0,
             enemies_x: 0,
             main_color: 1,
@@ -47,9 +48,9 @@ impl Game {
             self.player_position.y += 1;
         }
         
-        if keyboard::is_key_pressed(_ctx, KeyCode::Space) && self.scene_x % 6 == 0 {
+        if keyboard::is_key_pressed(_ctx, KeyCode::Space) && self.time % 6 == 0 {
             let position = Vec2 { x: self.player_position.x + 9, y: self.player_position.y + 3 };
-            let shot = Shot { position, dirty: false };
+            let shot = Shot { position, active: true };
             self.shots.push(shot);
         }
 

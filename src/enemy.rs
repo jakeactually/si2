@@ -3,14 +3,13 @@ use crate::util;
 
 use types::{Enemy, Game, Vec2, WIDTH};
 use ggez::{GameResult};
-use std::collections::{HashSet};
 
 impl Enemy {
-    pub fn tick(&mut self, deleted_shots: &mut HashSet<u8>, game: &mut Game) -> GameResult<()> {
+    pub fn tick(mut self, game: &mut Game) -> GameResult<Enemy> {
         let screen_x = game.enemies_x + self.position.x;
 
-        if screen_x > WIDTH as i32 || screen_x < 0 {
-            return Ok(());
+        if screen_x > WIDTH as i32 {
+            return Ok(self);
         }
 
         if game.enemies_x % 4 == 0 {
@@ -18,7 +17,7 @@ impl Enemy {
         }
 
         if screen_x > WIDTH as i32 / 4 * 3 - 10 {
-            return Ok(());
+            return Ok(self);
         }
 
         if self.data.floats {
@@ -28,6 +27,39 @@ impl Enemy {
         let obj = game.load_object(self.data.model_id as u8)?;
         let bullet = game.static_objects[20].clone();
 
+        self.oscillation();
+
+        if screen_x > -100 && screen_x < 940 {
+            let collission = util::intersect(
+                game.player_position.clone(),
+                Vec2 { x: 10, y: 7 },
+                Vec2 { x: screen_x, y: self.position.y },
+                obj.size.clone()
+            );
+
+            for shot in game.shots.iter_mut() {
+                let collission = util::intersect(
+                    shot.position.clone(),
+                    bullet.size.clone(),
+                    Vec2 { x: screen_x, y: self.position.y },
+                    obj.size.clone()
+                );
+                
+                if collission {
+                    shot.active = false;
+                    self.data.lives -= 1;
+                }
+            }
+
+            if !self.alive() && self.explosion_frames > 0 {
+                self.explosion_frames -= 1;
+            }
+        }
+
+        Ok(self)
+    }
+
+    pub fn oscillation(&mut self) {
         if self.dir == 1 {
             if self.position.y < self.data.moves_between.y {
                 self.position.y += 1;
@@ -43,45 +75,13 @@ impl Enemy {
                 self.dir = if self.data.move_down { 1 } else { 0 };
             }
         }
-
-        if screen_x > -100 && screen_x < 940 {
-            let collission = util::intersect(
-                game.player_position.clone(),
-                Vec2 { x: 10, y: 7 },
-                Vec2 { x: screen_x, y: self.position.y },
-                obj.size.clone()
-            );
-
-            for (i, shot) in game.shots.iter().enumerate() {
-                let collission = util::intersect(
-                    shot.position.clone(),
-                    bullet.size.clone(),
-                    Vec2 { x: screen_x, y: self.position.y },
-                    obj.size.clone()
-                );
-                
-                if collission {
-                    self.data.lives -= 1;
-
-                    if self.data.lives <= 0 {
-                        deleted_shots.insert(i as u8);
-                    }
-                }
-            }
-
-            if self.data.lives <= 0 && self.explosion_frames > 0 {
-                self.explosion_frames -= 1;
-            }
-        }
-
-        Ok(())
     }
 
     pub fn render(self, game: &mut Game) -> GameResult<()> {
         let obj = game.load_object(self.data.model_id + self.anim_state)?;
         let screen_x = game.enemies_x + self.position.x;
 
-        if self.data.lives > 0 {
+        if self.alive(){
             game.render_object(&obj, screen_x, self.position.y)?;
         } else if self.explosion_frames > 0 {
             let explosion = game.static_objects[22 - (self.explosion_frames as usize - 1) / 3].clone();

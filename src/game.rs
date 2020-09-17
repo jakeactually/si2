@@ -1,50 +1,39 @@
 use crate::types;
 
-use types::{Game, Shot, Enemy, scenery_data, Vec2, Scenery, WIDTH, HEIGHT, Graphics};
-use ggez::{Context, GameResult};
+use types::{Game, Shot, Enemy, WIDTH, Graphics};
+use ggez::{Context, GameResult, GameError};
 use std::collections::{HashSet};
-use rand::Rng;
 
 impl Game {
     pub fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         self.clear()?;
+        self.keyboard(_ctx)?;
 
         if !self.is_playing {
             self.is_playing = true;
             self.enemies = self.load_level(self.level)?;
-            // dbg!(self.enemies.clone());
             self.load_scenery()?;            
         }
 
-        self.keyboard(_ctx)?;
-
         // Enemies
 
-        let mut next_enemies: Vec<Enemy> = vec![];
-        let mut deleted_shots: HashSet<u8> = HashSet::new();
-
-        for mut enemy in self.enemies.clone() {
-            enemy.tick(&mut deleted_shots, self)?;
-            
-            if enemy.alive || enemy.explosion_frames > 0 {
-                next_enemies.push(enemy);
-            }
-        }
-
-        self.enemies = next_enemies;
+        self.enemies = self
+            .enemies
+            .clone()
+            .into_iter()
+            .filter(|e| e.alive() || e.explosion_frames > 0)
+            .map(|e| e.tick(self))
+            .collect::<GameResult<Vec<_>>>()?;
 
         // Shots
 
-        let mut next_shots: Vec<Shot> = vec![];
-
-        for (i, shot) in self.shots.iter().enumerate() {
-            if shot.position.x < WIDTH as i32 && !deleted_shots.contains(&(i as u8)) {
-                let new_shot = Shot { position: shot.position.clone().left(), dirty: false };
-                next_shots.push(new_shot);
-            }
-        }
-
-        self.shots = next_shots;
+        self.shots = self
+            .shots
+            .clone()
+            .into_iter()
+            .filter(|s| s.active && s.position.x < WIDTH as i32)
+            .map(|s| s.left())
+            .collect();
 
         // The end
 
@@ -54,6 +43,7 @@ impl Game {
             }
         }
 
+        self.time += 1;
         self.enemies_x -= 1;
 
         Ok(())
@@ -93,9 +83,7 @@ impl Game {
         let bullet = self.static_objects[20].clone();
 
         for shot in self.shots.clone().iter() {
-            //if shot.position.x < WIDTH as i32 {
-                self.render_object(&bullet, shot.position.x, shot.position.y)?;
-            //}
+            self.render_object(&bullet, shot.position.x, shot.position.y)?;
         }
 
         Ok(())
