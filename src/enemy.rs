@@ -1,8 +1,9 @@
-use crate::types;
+use crate::types::{Enemy, Game, Vec2, WIDTH, WeaponKind};
 use crate::util;
+use crate::objects::Graphics;
 
-use types::{Enemy, Game, Vec2, WIDTH, Graphics};
 use ggez::{GameResult};
+use rand::Rng;
 
 impl Enemy {
     pub fn tick(mut self, game: &mut Game) -> GameResult<Enemy> {
@@ -12,22 +13,28 @@ impl Enemy {
             return Ok(self);
         }
 
-        if game.enemies_x % 4 == 0 {
+        if game.time % 4 == 0 {
             self.anim_state = (self.anim_state + 1) % self.data.anim_count;
         }
+
+        self.collision(game)?;
 
         if screen_x > WIDTH as i32 / 4 * 3 - 10 {
             return Ok(self);
         }
 
+        self.oscillation();
+
         if self.data.floats {
             self.position.x += 1;
         }
 
-        let obj = game.load_object(self.data.model_id as u8)?;
-        let bullet = game.static_objects[20].clone();
+        Ok(self)
+    }
 
-        self.oscillation();
+    pub fn collision(&mut self, game: &mut Game) -> GameResult<()> {
+        let screen_x = game.enemies_x + self.position.x;
+        let obj = game.load_object(self.data.model_id as u8)?;
 
         if screen_x > -100 && screen_x < 940 {
             let collission = util::intersect(
@@ -38,20 +45,12 @@ impl Enemy {
             );
 
             if collission {
-                if self.is_bonus() {
-                    self.delete();
-                    game.bonus += 3;
-                } else {
-                    if !game.player.protected() {                        
-                        game.player.lives -= 1;
-                        game.player.protection = 50;
-                    }
-                    
-                    self.damage();
-                }
+                self.object_collision(game);
             }
 
-            for shot in game.shots.iter_mut() {
+            game.shots = game.shots.clone().into_iter().map(|mut shot| {
+                let bullet = shot.weapon_kind.clone().model(game);
+
                 let collission = util::intersect(
                     shot.position.clone(),
                     bullet.size.clone(),
@@ -62,18 +61,44 @@ impl Enemy {
                 if collission {
                     if self.is_bonus() {
                     } else {
-                        shot.active = false;                        
+                        shot.crash();                        
                         self.damage();
                     }
                 }
-            }
+
+                shot
+            }).collect();
 
             if game.time % 2 == 0 {
                 self.die();
             }
         }
 
-        Ok(self)
+        Ok(())
+    }
+
+    pub fn object_collision(&mut self, game: &mut Game) {
+        if self.is_bonus() {
+            self.delete();
+
+            let mut rng = rand::thread_rng();
+            let id: u8 = rng.gen_range(0, 4);
+            let wk: WeaponKind = id.into();
+
+            if game.weapon.kind == wk {
+                game.weapon.amount += wk.default_amount();
+            } else {
+                game.weapon.kind = id.into();
+                game.weapon.amount = wk.default_amount();
+            }
+        } else {
+            if !game.player.protected() {                        
+                game.player.lives -= 1;
+                game.player.protection = 50;
+            }
+            
+            self.damage();
+        }
     }
 
     pub fn oscillation(&mut self) {

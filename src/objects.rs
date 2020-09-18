@@ -1,7 +1,7 @@
 use crate::types;
 use crate::util;
 
-use types::{Object, Vec2};
+use types::{Object, Vec2, SceneryData};
 
 pub const PMNUM: [[u8; 15]; 10] = [
     [1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1],
@@ -246,3 +246,52 @@ pub fn get_static_objects() -> [Object; 23] {
         }, /* gExplosionA2 */
     ]
 }
+
+pub fn get_weapons() -> [Object; 3] {
+    [
+        Object {
+            size: Vec2 {
+                x: 5,
+                y: 5
+            },
+            data: PMMISSILEICON.to_vec(),
+        }, /* Missile */
+        Object {
+            size: Vec2 {
+                x: 84,
+                y: 1
+            },
+            data: [1; 84].to_vec(),
+        }, /* Beam */
+        Object {
+            size: Vec2 {
+                x: 1,
+                y: 43
+            },
+            data: [1; 43].to_vec(),
+        }, /* Wall */
+    ]
+}
+
+pub enum Graphics {
+    /* Számok, 3*5-ös méretben */
+    GNum0, GNum1, GNum2, GNum3, GNum4, GNum5, GNum6, GNum7, GNum8, GNum9,
+    /* Menüelemek */
+    GSpace, GIntro, GImpact, GScrollMark, GDotEmpty, GDotFull,
+    /* Játékosssal kapcsolatos modellek és ikonok */
+    GLife, /* Életjel */
+    GMissileIcon, /* Rakéta ikonja */
+    GBeamIcon,/* SuGár ikonja */
+    GWallIcon, /* Fal ikonja */
+    GShot, /* Lövés */
+    GExplosionA1, GExplosionA2 /* Robbanás animáció 2 lépése */
+}
+
+pub const scenery_data: [SceneryData; 6] = [
+    SceneryData { first_object: 0, objects: 0, upper: 0 }, /* Az 1. szinten nincs táj */
+    SceneryData { first_object: 0, objects: 2, upper: 0 }, /* 2. szint, 0. dinamikus helytől 2 elemű, 700 pixel széles táj */
+    SceneryData { first_object: 2, objects: 6, upper: 0 }, /* 3. szint, 2. dinamikus helytől 6 elemű, 750 pixel széles táj */
+    SceneryData { first_object: 8, objects: 6, upper: 0 }, /* 4. szint, 8. dinamikus helytől 6 elemű, 1000 pixel széles táj */
+    SceneryData { first_object: 14, objects: 4, upper: 1 }, /* 5. szint, 14. dinamikus helytől 4 elemű, 1250 pixel széles felső táj */
+    SceneryData { first_object: 14, objects: 4, upper: 1 }, /* 6. szint, az 5. szint elemeiből, 1600 pixel szélesen */
+];

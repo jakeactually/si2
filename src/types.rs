@@ -1,3 +1,5 @@
+use crate::objects::Graphics;
+
 use std::collections::HashMap;
 
 pub const WIDTH: u8 = 84;
@@ -11,7 +13,7 @@ pub const G_BEAM: u8 = 253;
 pub const G_WALL: u8 = 254;
 pub const G_PLAYER: u8 = 255;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Object {
     pub size: Vec2,
     pub data: Vec<u8>
@@ -23,6 +25,7 @@ pub struct Game {
     pub secondary_color: u8,
 
     pub static_objects: Vec<Object>,
+    pub weapons: Vec<Object>,
     pub objects_cache: HashMap<u8, Object>,
     pub enemies_cache: HashMap<u8, EnemyData>,
 
@@ -37,15 +40,14 @@ pub struct Game {
     pub enemies_x: i32,
 
     pub player: Player,
-    pub bonus: u8,
-    pub score: u32,
+    pub weapon: Weapon,
+    pub score: u32
 }
 
 #[derive(Clone)]
 pub struct Player {
     pub position: Vec2,
     pub lives: u8,
-    pub weapon: WeaponKind,
     pub protection: u8,
 }
 
@@ -53,6 +55,12 @@ impl Player {
     pub fn protected(&self) -> bool {
         self.protection > 0
     }
+}
+
+#[derive(Clone)]
+pub struct Weapon {
+    pub amount: u8,
+    pub kind: WeaponKind
 }
 
 #[derive(Clone)]
@@ -110,7 +118,7 @@ pub struct EnemyData {
     pub moves_between: Vec2
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Vec2 {
     pub x: i32,
     pub y: i32
@@ -122,15 +130,40 @@ impl Vec2 {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Shot {
     pub position: Vec2,
-    pub active: bool
+    pub active: bool,
+    pub weapon_kind: WeaponKind,
+    pub duration: u8,
 }
 
 impl Shot {
-    pub fn left(self) -> Shot {
-        Shot { position: self.position.left(), active: self.active }
+    pub fn tick(self) -> Shot {
+        use WeaponKind::*;
+
+        match self.weapon_kind {
+            Standard => Shot { position: self.position.left(), ..self },
+            Missile => Shot { position: self.position.left(), ..self },
+            Beam => Shot {
+                position: self.position.left(),
+                duration: self.duration - 1,
+                active: self.duration > 1,
+                ..self
+            },
+            Wall => Shot { position: self.position.left(), ..self }
+        }
+    }
+
+    pub fn crash(&mut self) {
+        use WeaponKind::*;
+
+        match self.weapon_kind {
+            Standard => self.active = false,
+            Missile => self.active = false,
+            Beam => (),
+            Wall => ()
+        }
     }
 }
 
@@ -147,33 +180,45 @@ pub struct SceneryData {
     pub upper: u8
 }
 
-pub enum Graphics {
-    /* Számok, 3*5-ös méretben */
-    GNum0, GNum1, GNum2, GNum3, GNum4, GNum5, GNum6, GNum7, GNum8, GNum9,
-    /* Menüelemek */
-    GSpace, GIntro, GImpact, GScrollMark, GDotEmpty, GDotFull,
-    /* Játékosssal kapcsolatos modellek és ikonok */
-    GLife, /* Életjel */
-    GMissileIcon, /* Rakéta ikonja */
-    GBeamIcon,/* SuGár ikonja */
-    GWallIcon, /* Fal ikonja */
-    GShot, /* Lövés */
-    GExplosionA1, GExplosionA2 /* Robbanás animáció 2 lépése */
-}
-
-pub const scenery_data: [SceneryData; 6] = [
-    SceneryData { first_object: 0, objects: 0, upper: 0 }, /* Az 1. szinten nincs táj */
-    SceneryData { first_object: 0, objects: 2, upper: 0 }, /* 2. szint, 0. dinamikus helytől 2 elemű, 700 pixel széles táj */
-    SceneryData { first_object: 2, objects: 6, upper: 0 }, /* 3. szint, 2. dinamikus helytől 6 elemű, 750 pixel széles táj */
-    SceneryData { first_object: 8, objects: 6, upper: 0 }, /* 4. szint, 8. dinamikus helytől 6 elemű, 1000 pixel széles táj */
-    SceneryData { first_object: 14, objects: 4, upper: 1 }, /* 5. szint, 14. dinamikus helytől 4 elemű, 1250 pixel széles felső táj */
-    SceneryData { first_object: 14, objects: 4, upper: 1 }, /* 6. szint, az 5. szint elemeiből, 1600 pixel szélesen */
-];
-
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum WeaponKind {
     Standard,
     Missile,
     Beam,
     Wall
+}
+
+impl WeaponKind {
+    pub fn default_amount(self) -> u8 {
+        use WeaponKind::*;
+
+        match self {
+            Standard => 0,
+            Missile => 3,
+            Beam => 2,
+            Wall => 1
+        }
+    }
+
+    pub fn model(self, game: &Game) -> Object {
+        if self == WeaponKind::Standard {
+            game.static_objects[Graphics::GShot as usize].clone()
+        } else {
+            let index = self as usize - 1;
+            game.weapons[index].clone()
+        }
+    }
+}
+
+impl From<u8> for WeaponKind {
+    fn from(n: u8) -> WeaponKind {
+        use WeaponKind::*;
+
+        match n {
+            1 => Missile,
+            2 => Beam,
+            3 => Wall,
+            _ => Standard
+        }
+    }
 }

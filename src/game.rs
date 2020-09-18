@@ -1,6 +1,6 @@
-use crate::types;
+use crate::types::{Game, WIDTH, G_PLAYER, G_PROTECTION_A1, Vec2, WeaponKind};
+use crate::objects::Graphics;
 
-use types::{Game, WIDTH, Graphics, G_PLAYER, G_PROTECTION_A1, Vec2};
 use ggez::{Context, GameResult};
 
 impl Game {
@@ -48,7 +48,7 @@ impl Game {
             .clone()
             .into_iter()
             .filter(|s| s.active && s.position.x < WIDTH as i32)
-            .map(|s| s.left())
+            .map(|s| s.tick())
             .collect();
 
         // The end
@@ -83,11 +83,11 @@ impl Game {
             self.render_object(&heart, i as i32 * 6, 0)?;
         }
 
-        let index = Graphics::GLife as usize + self.player.weapon.clone() as usize + 1;
+        let index = Graphics::GMissileIcon as usize + self.weapon.clone().kind as usize - 1;
         let weapon = self.static_objects[index].clone();
         self.render_object(&weapon, 33, 0)?;
 
-        self.render_number(self.bonus as u32, 2, 43, 0)?;
+        self.render_number(self.weapon.amount as u32, 2, 43, 0)?;
         self.render_number(self.score, 5, 71, 0)?;
 
         for scenery in self.scenery.clone() {
@@ -102,9 +102,8 @@ impl Game {
             }
         }
 
-        let bullet = self.static_objects[Graphics::GShot as usize].clone();
-
         for shot in self.shots.clone().iter() {
+            let bullet = shot.weapon_kind.clone().model(self);
             self.render_object(&bullet, shot.position.x, shot.position.y)?;
         }
 
