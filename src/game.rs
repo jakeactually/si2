@@ -43,12 +43,18 @@ impl Game {
 
         // Shots
 
+        let nearest_y = if self.enemies.len() > 0 {
+            self.enemies[0].position.y
+        } else {
+            self.player.position.y
+        };
+
         self.shots = self
             .shots
             .clone()
             .into_iter()
             .filter(|s| s.active && s.position.x < WIDTH as i32)
-            .map(|s| s.tick())
+            .map(|s| s.tick(nearest_y))
             .collect();
 
         // The end

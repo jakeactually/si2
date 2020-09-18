@@ -126,7 +126,17 @@ pub struct Vec2 {
 
 impl Vec2 {
     pub fn left(self) -> Self {
-        Vec2 { x: self.x + 1, y: self.y }
+        Vec2 { x: self.x + 1, ..self }
+    }
+
+    pub fn approach_y(self, ny: i32) -> Self {
+        if self.y > ny {
+            Vec2 { y: self.y - 1, ..self }
+        } else if self.y < ny {
+            Vec2 { y: self.y + 1, ..self }
+        } else {
+            self
+        }
     }
 }
 
@@ -139,12 +149,15 @@ pub struct Shot {
 }
 
 impl Shot {
-    pub fn tick(self) -> Shot {
+    pub fn tick(self, nearest_y: i32) -> Shot {
         use WeaponKind::*;
 
         match self.weapon_kind {
             Standard => Shot { position: self.position.left(), ..self },
-            Missile => Shot { position: self.position.left(), ..self },
+            Missile => Shot {
+                position: self.position.left().approach_y(nearest_y),
+                ..self
+            },
             Beam => Shot {
                 position: self.position.left(),
                 duration: self.duration - 1,

@@ -39,7 +39,7 @@ impl Game {
             },
             weapon: Weapon {
                 amount: 3,
-                kind: WeaponKind::Wall
+                kind: WeaponKind::Missile
             },
             score: 0,
         }
@@ -70,7 +70,7 @@ impl Game {
                 if self.weapon.amount > 0 {
                     self.weapon.amount -= 1;                    
                     let y = if self.weapon.kind == WeaponKind::Wall { 5 } else { position.y + 3 };
-                    
+
                     let position = Vec2 { x: position.x + 9, y: y };
                     let shot = Shot { position, active: true, weapon_kind: self.weapon.kind.clone(), duration: 3 };
                     self.shots.push(shot);
