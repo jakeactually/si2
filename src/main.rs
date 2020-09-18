@@ -48,7 +48,7 @@ impl EventHandler for Game {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::clear(ctx, graphics::WHITE);
+        graphics::clear(ctx, if self.inverted { graphics::BLACK } else { graphics::WHITE });
         self.paint(ctx)?;
         graphics::present(ctx)
     }

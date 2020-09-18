@@ -288,10 +288,40 @@ pub enum Graphics {
 }
 
 pub const scenery_data: [SceneryData; 6] = [
-    SceneryData { first_object: 0, objects: 0, upper: 0 }, /* Az 1. szinten nincs táj */
-    SceneryData { first_object: 0, objects: 2, upper: 0 }, /* 2. szint, 0. dinamikus helytől 2 elemű, 700 pixel széles táj */
-    SceneryData { first_object: 2, objects: 6, upper: 0 }, /* 3. szint, 2. dinamikus helytől 6 elemű, 750 pixel széles táj */
-    SceneryData { first_object: 8, objects: 6, upper: 0 }, /* 4. szint, 8. dinamikus helytől 6 elemű, 1000 pixel széles táj */
-    SceneryData { first_object: 14, objects: 4, upper: 1 }, /* 5. szint, 14. dinamikus helytől 4 elemű, 1250 pixel széles felső táj */
-    SceneryData { first_object: 14, objects: 4, upper: 1 }, /* 6. szint, az 5. szint elemeiből, 1600 pixel szélesen */
+    SceneryData {
+        first_object: 0,
+        objects: 0,
+        upper: 0,
+        inverted_color: true
+    }, /* Az 1. szinten nincs táj */
+    SceneryData {
+        first_object: 0,
+        objects: 2,
+        upper: 0,
+        inverted_color: false
+    }, /* 2. szint, 0. dinamikus helytől 2 elemű, 700 pixel széles táj */
+    SceneryData {
+        first_object: 2,
+        objects: 6,
+        upper: 0,
+        inverted_color: false
+    }, /* 3. szint, 2. dinamikus helytől 6 elemű, 750 pixel széles táj */
+    SceneryData {
+        first_object: 8,
+        objects: 6,
+        upper: 0,
+        inverted_color: false
+    }, /* 4. szint, 8. dinamikus helytől 6 elemű, 1000 pixel széles táj */
+    SceneryData {
+        first_object: 14,
+        objects: 4,
+        upper: 1,
+        inverted_color: true
+    }, /* 5. szint, 14. dinamikus helytől 4 elemű, 1250 pixel széles felső táj */
+    SceneryData {
+        first_object: 14,
+        objects: 4,
+        upper: 1,
+        inverted_color: true
+    }, /* 6. szint, az 5. szint elemeiből, 1600 pixel szélesen */
 ];

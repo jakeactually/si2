@@ -12,7 +12,7 @@ impl Game {
         let amount = bytes[0];
         let mut result = vec![];
 
-        for i in 0..amount {
+        for i in 0..amount as u32 {
             let offset = i * 5;
             let view = bytes[(offset as usize + 1)..(offset as usize + 6)].to_vec();
             let enemy_id = view[3];

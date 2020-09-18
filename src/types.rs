@@ -4,6 +4,8 @@ use std::collections::HashMap;
 
 pub const WIDTH: u8 = 84;
 pub const HEIGHT: u8 = 48;
+pub const PLAYER_WIDTH: u8 = 10;
+pub const PLAYER_HEIGHT: u8 = 7;
 
 /* Fájlba áthelyezett objektumok */
 pub const G_PROTECTION_A1: u8 = 250;
@@ -21,8 +23,7 @@ pub struct Object {
 
 pub struct Game {
     pub screen: [[u8; WIDTH as usize]; HEIGHT as usize],
-    pub main_color: u8,
-    pub secondary_color: u8,
+    pub inverted: bool,
 
     pub static_objects: Vec<Object>,
     pub weapons: Vec<Object>,
@@ -40,6 +41,7 @@ pub struct Game {
     pub enemies_x: i32,
 
     pub player: Player,
+    pub y_axis: Vec2,
     pub weapon: Weapon,
     pub score: u32
 }
@@ -190,7 +192,8 @@ pub struct Scenery {
 pub struct SceneryData {
     pub first_object: u8,
     pub objects: u8,
-    pub upper: u8
+    pub upper: u8,
+    pub inverted_color: bool
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

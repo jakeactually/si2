@@ -1,5 +1,5 @@
-use crate::types::{Game, WIDTH, G_PLAYER, G_PROTECTION_A1, Vec2, WeaponKind};
-use crate::objects::Graphics;
+use crate::types::{Game, WIDTH, HEIGHT, PLAYER_HEIGHT, G_PLAYER, G_PROTECTION_A1, Vec2};
+use crate::objects::{scenery_data, Graphics};
 
 use ggez::{Context, GameResult};
 
@@ -9,15 +9,21 @@ impl Game {
         self.keyboard(_ctx)?;
 
         if !self.is_playing {
+            self.inverted = self.level_data().inverted_color;
             self.enemies = self.load_level(self.level)?;
-            self.load_scenery()?; 
+
+            if self.level_data().upper == 1 {
+                self.y_axis = Vec2 { x: 0, y: HEIGHT as i32 - PLAYER_HEIGHT as i32 - 5 };
+            }
+
+            self.load_scenery()?;
 
             self.player.position = Vec2 { x: 3, y: 20 };
             self.scene_x = 0;
             self.enemies_x = 0;
             self.level += 1;
 
-            self.is_playing = true;
+            self.is_playing = true;            
         }
 
         // Enemies
@@ -84,17 +90,7 @@ impl Game {
             self.render_object(&player, self.player.position.x, self.player.position.y)?;
         }
 
-        let heart = self.static_objects[Graphics::GLife as usize].clone();
-        for i in 0..self.player.lives {
-            self.render_object(&heart, i as i32 * 6, 0)?;
-        }
-
-        let index = Graphics::GMissileIcon as usize + self.weapon.clone().kind as usize - 1;
-        let weapon = self.static_objects[index].clone();
-        self.render_object(&weapon, 33, 0)?;
-
-        self.render_number(self.weapon.amount as u32, 2, 43, 0)?;
-        self.render_number(self.score, 5, 71, 0)?;
+        self.render_bar();
 
         for scenery in self.scenery.clone() {
             if self.scene_x + scenery.position.x < WIDTH as i32 {

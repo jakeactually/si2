@@ -1,12 +1,10 @@
-use crate::types;
-use crate::objects;
+use crate::types::*;
+use crate::objects::{get_static_objects, get_weapons, scenery_data};
 
-use types::{Game, Vec2, Shot, WIDTH, HEIGHT, Scenery, Player, Weapon, WeaponKind};
 use ggez::event::{KeyCode};
 use ggez::{Context, GameResult};
 use std::collections::{HashMap};
 use ggez::input::keyboard;
-use objects::scenery_data;
 
 use rand::Rng;
 
@@ -14,11 +12,10 @@ impl Game {
     pub fn new(_ctx: &mut Context) -> Game {
         Game {
             screen: [[0; WIDTH as usize]; HEIGHT as usize],
-            main_color: 1,
-            secondary_color: 0,
+            inverted: false,
 
-            static_objects: objects::get_static_objects().to_vec(),
-            weapons: objects::get_weapons().to_vec(),
+            static_objects: get_static_objects().to_vec(),
+            weapons: get_weapons().to_vec(),
             objects_cache: HashMap::new(),
             enemies_cache: HashMap::new(),
 
@@ -37,6 +34,7 @@ impl Game {
                 lives: 3,
                 protection: 0,
             },
+            y_axis: Vec2 { x: 5, y: HEIGHT as i32 - PLAYER_HEIGHT as i32 },
             weapon: Weapon {
                 amount: 3,
                 kind: WeaponKind::Missile
@@ -48,13 +46,13 @@ impl Game {
     pub fn keyboard(&mut self, _ctx: &mut Context) -> GameResult<()> {
         let position = &mut self.player.position;
 
-        if keyboard::is_key_pressed(_ctx, KeyCode::Right) && position.x < WIDTH as i32 - 10 {
+        if keyboard::is_key_pressed(_ctx, KeyCode::Right) && position.x < WIDTH as i32 - PLAYER_WIDTH as i32 {
             position.x += 1;
         } else if keyboard::is_key_pressed(_ctx, KeyCode::Left) && position.x > 0 {
             position.x -= 1;
-        } else if keyboard::is_key_pressed(_ctx, KeyCode::Up) && position.y > 5 {
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Up) && position.y > self.y_axis.x {
             position.y -= 1;
-        } else if keyboard::is_key_pressed(_ctx, KeyCode::Down) && position.y < HEIGHT as i32 - 7 {
+        } else if keyboard::is_key_pressed(_ctx, KeyCode::Down) && position.y < self.y_axis.y {
             position.y += 1;
         }
         
@@ -92,16 +90,17 @@ impl Game {
                 let sd = &scenery_data[self.level as usize];
                 let n: u8 = rng.gen_range(sd.first_object, sd.first_object + sd.objects);
                 let rock = self.load_object(n)?;
+                let y = if self.level_data().upper == 1 { 0 } else { HEIGHT as i32 - rock.size.y };
 
-                self.scenery.push(Scenery {
-                    position: Vec2 { x: x, y: HEIGHT as i32 - rock.size.y },
-                    model: rock.clone()
-                });
-
+                self.scenery.push(Scenery { position: Vec2 { x, y }, model: rock.clone() });
                 x += rock.size.x;
             }
         }
 
         Ok(())
+    }
+
+    pub fn level_data(&self) -> SceneryData {
+        scenery_data[self.level as usize].clone()
     }
 }
