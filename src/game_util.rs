@@ -24,6 +24,7 @@ impl Game {
             shots: vec![],
 
             is_playing: false,
+            game_over: false,
             level: 0,
             time: 0,
             scene_x: 0,

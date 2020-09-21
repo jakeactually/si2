@@ -35,6 +35,7 @@ pub struct Game {
     pub shots: Vec<Shot>,
 
     pub is_playing: bool,
+    pub game_over: bool,
     pub level: u8,
     pub time: u32,
     pub scene_x: i32,

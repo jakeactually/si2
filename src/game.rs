@@ -6,9 +6,19 @@ use ggez::{Context, GameResult};
 impl Game {
     pub fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         self.clear()?;
-        self.keyboard(_ctx)?;
 
+        if self.game_over {
+            return Ok(());
+        }
+
+        self.keyboard(_ctx)?;
+        
         if !self.is_playing {
+            if self.level == 5 {
+                self.game_over = true;
+                return Ok(());
+            }
+
             self.inverted = self.level_data().inverted_color;
             self.enemies = self.load_level(self.level)?;
 
@@ -78,10 +88,20 @@ impl Game {
         self.time += 1;
         self.enemies_x -= 1;
 
+        if self.player.lives == 0 {
+            self.game_over = true;
+        }
+
         Ok(())
     }
 
     pub fn render(&mut self) -> GameResult<()> {
+        if self.game_over {
+            self.render_text("game", 5, 5)?;
+            self.render_text("over", 35, 5)?;
+            return Ok(());
+        }
+
         if self.player.protected() {
             let player = self.load_object(G_PROTECTION_A1 + self.player.protection / 2 % 2)?;
             self.render_object(&player, self.player.position.x - 2, self.player.position.y - 2)?;
@@ -90,7 +110,7 @@ impl Game {
             self.render_object(&player, self.player.position.x, self.player.position.y)?;
         }
 
-        self.render_bar();
+        self.render_bar()?;
 
         for scenery in self.scenery.clone() {
             if self.scene_x + scenery.position.x < WIDTH as i32 {
