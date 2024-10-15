@@ -82,7 +82,7 @@ impl Enemy {
             self.delete();
 
             let mut rng = rand::thread_rng();
-            let id: u8 = rng.gen_range(0, 4);
+            let id: u8 = rng.gen_range(0..4);
             let wk: WeaponKind = id.into();
 
             if game.weapon.kind == wk {
